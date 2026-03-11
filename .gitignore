@@ -9,7 +9,28 @@ __pycache__/
 .coverage
 coverage.xml
 
-# Generated output from scripts
-*.json
+# ── NEVER COMMIT THESE ──────────────────────────────────────────────────────
+# Private keys and certificates (any format)
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+*.der
+
+# Certificate output files from issuance scripts
+*_cert.json
+blue_cert.json
+scada_cert.json
+meter_cert.json
+user_cert.json
+
+# Certbot account keys and configs (contain RSA private keys)
+certbot/config/accounts/
+
+# Offline HSM ceremony output (contains CA private key)
 offline_hsm/
+
+# Other generated output from scripts
 monitoring_reports/
+revocation.crl
