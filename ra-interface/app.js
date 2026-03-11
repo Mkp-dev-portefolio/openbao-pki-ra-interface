@@ -108,38 +108,8 @@ const Bao = {
 };
 
 // ═══════════════════════════════════════════════════════════
-// UTILS
+// UTILS  (pure helpers live in utils.js — loaded before this file)
 // ═══════════════════════════════════════════════════════════
-function daysUntil(unixTs) {
-  return Math.floor((unixTs * 1000 - Date.now()) / 86400000);
-}
-
-function formatDate(unixTs) {
-  if (!unixTs) return '—';
-  return new Date(unixTs * 1000).toLocaleDateString('en-GB', {
-    day: '2-digit', month: 'short', year: 'numeric',
-  });
-}
-
-function formatDatetime(isoOrUnix) {
-  const d = typeof isoOrUnix === 'number' ? new Date(isoOrUnix) : new Date(isoOrUnix);
-  return d.toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
-}
-
-function expiryBadge(days) {
-  if (days < 0)   return `<span class="badge badge-danger">⛔ Expired</span>`;
-  if (days < 7)   return `<span class="badge badge-danger">⚠ ${days}d</span>`;
-  if (days < 30)  return `<span class="badge badge-warn">⚠ ${days}d</span>`;
-  return `<span class="badge badge-ok">✓ ${days}d</span>`;
-}
-
-function truncSerial(s) {
-  return s ? s.substring(0, 23) + '…' : '—';
-}
-
-function uid() {
-  return Math.random().toString(36).slice(2, 10).toUpperCase();
-}
 
 function auditPush(action, detail, level = 'ok') {
   STATE.auditLog.unshift({
@@ -425,21 +395,7 @@ const Discovery = {
     this.render(filtered);
   },
   _parseSubject(pem) {
-    if (!pem) return {};
-    try {
-      const lines = atob(pem.replace(/-----[^-]+-----/g,'').replace(/\s/g,'')).split('');
-      return {};
-    } catch {}
-    const m = pem.match(/subject=([^\n]+)/);
-    if (m) {
-      const parts = {};
-      m[1].split(',').forEach(p => {
-        const [k,v] = p.trim().split('=');
-        parts[k?.trim()] = v?.trim();
-      });
-      return { cn: parts['CN'], o: parts['O'], ou: parts['OU'] };
-    }
-    return {};
+    return parseSubject(pem);
   },
   async inspect(serial) {
     el('inspect-serial').textContent = serial;

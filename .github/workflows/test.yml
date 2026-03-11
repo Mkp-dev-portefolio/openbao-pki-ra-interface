@@ -1,0 +1,166 @@
+name: Test Suite
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────────
+  # JavaScript unit tests (Jest)
+  # Tests ra-interface/utils.js via ra-interface/app.test.js
+  # ─────────────────────────────────────────────────────────────────────────
+  js-unit-tests:
+    name: JavaScript unit tests (Jest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ra-interface
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: ra-interface/package.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests with coverage
+        run: npm test -- --coverage --coverageReporters=text --coverageReporters=lcov
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: js-coverage
+          path: ra-interface/coverage/
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Python tests (pytest)
+  # Tests tests/test_acme_enrollment_pytest.py with mocked HTTP responses
+  # ─────────────────────────────────────────────────────────────────────────
+  python-tests:
+    name: Python tests (pytest)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: requirements-test.txt
+
+      - name: Install test dependencies
+        run: pip install -r requirements-test.txt
+
+      - name: Run pytest (offline/unit tests only)
+        run: pytest tests/test_acme_enrollment_pytest.py -v --tb=short -m "not integration"
+
+      - name: Run pytest with coverage
+        run: |
+          pytest tests/test_acme_enrollment_pytest.py \
+            -v --tb=short -m "not integration" \
+            --cov=. --cov-report=term-missing --cov-report=xml
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-coverage
+          path: coverage.xml
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Bash linting (ShellCheck)
+  # Catches common shell script errors without needing an OpenBao instance
+  # ─────────────────────────────────────────────────────────────────────────
+  bash-lint:
+    name: Bash linting (ShellCheck)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ShellCheck
+        run: sudo apt-get install -y shellcheck
+
+      - name: Run ShellCheck on all shell scripts
+        run: |
+          # SC2148: Tips depend on target shell — suppress for mixed sourcing patterns
+          # SC1091: Not following sourced files — suppress as they're env-dependent
+          shellcheck --severity=warning \
+            --exclude=SC1091 \
+            *.sh tests/*.bats || true
+          echo "ShellCheck complete. Review warnings above."
+
+      - name: Run ShellCheck (errors only — must pass)
+        run: |
+          shellcheck --severity=error \
+            --exclude=SC1091 \
+            *.sh tests/*.bats
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Integration tests (BATS) — only run on the main branch or tagged releases
+  # because they require a live OpenBao instance
+  # ─────────────────────────────────────────────────────────────────────────
+  bats-integration:
+    name: PKI lifecycle integration tests (BATS)
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install BATS
+        run: |
+          git clone https://github.com/bats-core/bats-core.git /tmp/bats-core
+          sudo /tmp/bats-core/install.sh /usr/local
+
+      - name: Download OpenBao
+        run: |
+          curl -fsSL \
+            "https://github.com/openbao/openbao/releases/latest/download/bao_linux_amd64" \
+            -o /usr/local/bin/bao
+          chmod +x /usr/local/bin/bao
+
+      - name: Start OpenBao dev server
+        run: |
+          bao server -dev -dev-root-token-id=root &
+          sleep 3
+          bao status
+        env:
+          BAO_ADDR: http://127.0.0.1:8200
+
+      - name: Bootstrap PKI mounts
+        run: |
+          bao secrets enable -path=pki_root pki || true
+          bao secrets enable -path=pki_int  pki || true
+          bao write pki_root/root/generate/internal \
+            common_name="Test Root CA" ttl=87600h >/dev/null
+          bao write pki_int/intermediate/generate/internal \
+            common_name="Test Intermediate CA" \
+            | grep -o '"csr": *"[^"]*"' | cut -d'"' -f4 > /tmp/int.csr
+          bao write pki_root/root/sign-intermediate \
+            csr="$(cat /tmp/int.csr)" \
+            | grep -o '"certificate": *"[^"]*"' | cut -d'"' -f4 > /tmp/int.crt
+          bao write pki_int/intermediate/set-signed \
+            certificate="$(cat /tmp/int.crt)"
+          bao auth enable userpass || true
+        env:
+          BAO_ADDR: http://127.0.0.1:8200
+          BAO_TOKEN: root
+
+      - name: Run BATS tests
+        run: bats tests/pki_lifecycle.bats
+        env:
+          BAO_ADDR: http://127.0.0.1:8200
+          BAO_TOKEN: root
+          BAO_BIN: bao
