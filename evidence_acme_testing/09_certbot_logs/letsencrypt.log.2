@@ -1,0 +1,609 @@
+2026-02-07 01:40:33,727:DEBUG:certbot._internal.main:certbot version: 4.2.0
+2026-02-07 01:40:33,727:DEBUG:certbot._internal.main:Location of certbot entry point: /opt/homebrew/bin/certbot
+2026-02-07 01:40:33,727:DEBUG:certbot._internal.main:Arguments: ['--standalone', '--server', 'http://127.0.0.1:8200/v1/pki_int/acme/directory', '--agree-tos', '--email', 'user@example.com', '-d', 'testserver.solar.energy.internal', '--http-01-port', '9999', '--config-dir', './certbot/config', '--work-dir', './certbot/work', '--logs-dir', './certbot/logs', '--non-interactive']
+2026-02-07 01:40:33,728:DEBUG:certbot._internal.main:Discovered plugins: PluginsRegistry(PluginEntryPoint#apache,PluginEntryPoint#manual,PluginEntryPoint#nginx,PluginEntryPoint#null,PluginEntryPoint#standalone,PluginEntryPoint#webroot)
+2026-02-07 01:40:33,744:DEBUG:certbot._internal.log:Root logging level set at 30
+2026-02-07 01:40:33,745:DEBUG:certbot._internal.plugins.selection:Requested authenticator standalone and installer None
+2026-02-07 01:40:33,745:DEBUG:certbot._internal.plugins.selection:Single candidate plugin: * standalone
+Description: Runs an HTTP server locally which serves the necessary validation files under the /.well-known/acme-challenge/ request path. Suitable if there is no HTTP server already running. HTTP challenge only (wildcards not supported).
+Interfaces: Authenticator, Plugin
+Entry point: EntryPoint(name='standalone', value='certbot._internal.plugins.standalone:Authenticator', group='certbot.plugins')
+Initialized: <certbot._internal.plugins.standalone.Authenticator object at 0x106ea1160>
+Prep: True
+2026-02-07 01:40:33,745:DEBUG:certbot._internal.plugins.selection:Selected authenticator <certbot._internal.plugins.standalone.Authenticator object at 0x106ea1160> and installer None
+2026-02-07 01:40:33,745:INFO:certbot._internal.plugins.selection:Plugins selected: Authenticator standalone, Installer None
+2026-02-07 01:40:33,922:DEBUG:acme.client:Sending GET request to http://127.0.0.1:8200/v1/pki_int/acme/directory.
+2026-02-07 01:40:33,923:DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): 127.0.0.1:8200
+2026-02-07 01:40:33,934:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "GET /v1/pki_int/acme/directory HTTP/1.1" 200 357
+2026-02-07 01:40:33,934:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:40:33 GMT
+Content-Length: 357
+
+{"keyChange":"http://127.0.0.1:8200/v1/pki_int/acme/key-change","meta":{"externalAccountRequired":false},"newAccount":"http://127.0.0.1:8200/v1/pki_int/acme/new-account","newNonce":"http://127.0.0.1:8200/v1/pki_int/acme/new-nonce","newOrder":"http://127.0.0.1:8200/v1/pki_int/acme/new-order","revokeCert":"http://127.0.0.1:8200/v1/pki_int/acme/revoke-cert"}
+2026-02-07 01:40:33,934:DEBUG:acme.client:Requesting fresh nonce
+2026-02-07 01:40:33,934:DEBUG:acme.client:Sending HEAD request to http://127.0.0.1:8200/v1/pki_int/acme/new-nonce.
+2026-02-07 01:40:33,936:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "HEAD /v1/pki_int/acme/new-nonce HTTP/1.1" 200 0
+2026-02-07 01:40:33,936:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQwaeLhvclDBOivmA4nHKfdFC9LVvNuTM0wECwvffwH3mipR1LgWkzm8Q
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:40:33 GMT
+
+
+2026-02-07 01:40:33,936:DEBUG:acme.client:Storing nonce: dmF1bHQwaeLhvclDBOivmA4nHKfdFC9LVvNuTM0wECwvffwH3mipR1LgWkzm8Q
+2026-02-07 01:40:33,936:DEBUG:acme.client:JWS payload:
+b'{\n  "contact": [\n    "mailto:user@example.com"\n  ],\n  "termsOfServiceAgreed": true\n}'
+2026-02-07 01:40:33,939:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/new-account:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAiandrIjogeyJuIjogIm5ZVHhSWVlZSzd4Nm12SlVNX0xIa0diN3p3OVJkVmVlajNjY3BHNVA1RURmZm1vMm9qTFdNLWc3bUxLRkY1YlVQS3lSSXpIQndEb1lrNHJUblhrYjZORnN6YkNrN25YcWRVNnhhT0xERkk1TXRacjZFQlJma3hOTWNYeHlyeXZma0RLMWJ0T1R4d0lHMGstMGZqNHk5bWpsV0dMOFdOUG1nX1QzSzV0YW43c1R6UDV2QWsza2xSaG1xa3RmdHZENnk4c3pwV1FheDFmUDd2akl0d1Q5dUxLRDFBd2VlZlRDOUctTDRtTk1PcF9sWDl2dlVjTE5wb2c1TmRWWi1yV0pxNmpwb3VKN1V5UFhSdVZYME56VzROTnpIMlcwTWdEQXNkV3pHZjRIQ056bUM1UWdPV0hyOU1CNzA4WjZmOC1LTTZJLWRpU1RZN0hEUXI2eTFrbnpFUSIsICJlIjogIkFRQUIiLCAia3R5IjogIlJTQSJ9LCAibm9uY2UiOiAiZG1GMWJIUXdhZUxodmNsREJPaXZtQTRuSEtmZEZDOUxWdk51VE0wd0VDd3ZmZndIM21pcFIxTGdXa3ptOFEiLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvbmV3LWFjY291bnQifQ",
+  "signature": "E5jDyoJMhEcaSsmbBfTOUVr0Jumw9PVl8xVvI6msOFuU8nl7jc67K_TzatXTEZC6IBAIhc9H2reT0ZxY0o80ve3Tu-H3rhsW64kYTQPCm5msgxsXntrYb6otVP9DCPYsbqZ_CSe2W7rktnzbrl5ViZQDGUQrriEFk9VRBxbbagSUygYrSWPwy5HJIHaMRZqmAeGWAsGdKiruajENTGzPixIb1fsjoIf-pgSPgeOih4ZPWFRRQTe7kw19tDLf5fE8KaOR2yaNmRtEuYLnvd8ZhLgQ9HuLWpVmcl8YC-nnfiVcjLtDt0VAQZ51-IaVdPbBU1L3fo1t34XMFc0430GyOA",
+  "payload": "ewogICJjb250YWN0IjogWwogICAgIm1haWx0bzp1c2VyQGV4YW1wbGUuY29tIgogIF0sCiAgInRlcm1zT2ZTZXJ2aWNlQWdyZWVkIjogdHJ1ZQp9"
+}
+2026-02-07 01:40:33,950:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/new-account HTTP/1.1" 201 157
+2026-02-07 01:40:33,950:DEBUG:acme.client:Received response:
+HTTP 201
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Location: http://127.0.0.1:8200/v1/pki_int/acme/account/ce0e90c5-8565-624c-2280-88bf27216c66
+Replay-Nonce: dmF1bHQwSxRR0sYv3nJZPgi_LWEtO_m9ANXFOIqB8Jb-ZB0V2A8zOpT2HYSjEw
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:40:33 GMT
+Content-Length: 157
+
+{"contact":["mailto:user@example.com"],"orders":"http://127.0.0.1:8200/v1/pki_int/acme/account/ce0e90c5-8565-624c-2280-88bf27216c66/orders","status":"valid"}
+2026-02-07 01:40:33,950:DEBUG:acme.client:Storing nonce: dmF1bHQwSxRR0sYv3nJZPgi_LWEtO_m9ANXFOIqB8Jb-ZB0V2A8zOpT2HYSjEw
+2026-02-07 01:40:38,956:DEBUG:certbot._internal.display.obj:Notifying user: Account registered.
+2026-02-07 01:40:38,956:DEBUG:certbot._internal.main:Picked account: <Account(RegistrationResource(body=Registration(key=None, contact=('mailto:user@example.com',), agreement=None, status='valid', terms_of_service_agreed=None, only_return_existing=None, external_account_binding=None), uri='http://127.0.0.1:8200/v1/pki_int/acme/account/ce0e90c5-8565-624c-2280-88bf27216c66', new_authzr_uri=None, terms_of_service=None), 22ea2ec91a6a76866c95b9b14c4ba349, Meta(creation_dt=datetime.datetime(2026, 2, 7, 0, 40, 33, tzinfo=datetime.timezone.utc), creation_host='176.129.168.192.in-addr.arpa', register_to_eff=None))>
+2026-02-07 01:40:38,957:DEBUG:certbot._internal.display.obj:Notifying user: Requesting a certificate for testserver.solar.energy.internal
+2026-02-07 01:40:38,964:DEBUG:acme.client:JWS payload:
+b'{\n  "identifiers": [\n    {\n      "type": "dns",\n      "value": "testserver.solar.energy.internal"\n    }\n  ]\n}'
+2026-02-07 01:40:38,965:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/new-order:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXdTeFJSMHNZdjNuSlpQZ2lfTFdFdE9fbTlBTlhGT0lxQjhKYi1aQjBWMkE4ek9wVDJIWVNqRXciLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvbmV3LW9yZGVyIn0",
+  "signature": "M4VVEyLXK-66NLznaimtpO-RuoP-hRN3t7M71isO5Luzx_YinTNOuic7f4RzedJ9-_ammta9DkooyVgFSc6Ipe4_xTSBvWES9gJVUo42IgcyWlI2AU7FYqPr8oN0_U12u8c0rw6ekOdzSdsejBMlMlKKusu48yhhtya__6_S4ODWQxi4BluyaMdTh6rAlyFBD9ahB1wYtyL64o1JRaC4Ya9qXFR2Xp5nfLs2t0OILsHSBwtppLVn5pe_Qdgc-WsvkXoj6tkKTD9iiDbk-E16i5X5aloBKOPaQAHfycm2_Rnnp7HbBGhy-SEa5EHzsTaVyi56P5wcVggjQHmK-l923g",
+  "payload": "ewogICJpZGVudGlmaWVycyI6IFsKICAgIHsKICAgICAgInR5cGUiOiAiZG5zIiwKICAgICAgInZhbHVlIjogInRlc3RzZXJ2ZXIuc29sYXIuZW5lcmd5LmludGVybmFsIgogICAgfQogIF0KfQ"
+}
+2026-02-07 01:40:38,976:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/new-order HTTP/1.1" 201 340
+2026-02-07 01:40:38,976:DEBUG:acme.client:Received response:
+HTTP 201
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Location: http://127.0.0.1:8200/v1/pki_int/acme/order/02e17f4d-d888-60c2-f55c-75a7c59f6da0
+Replay-Nonce: dmF1bHQw5bnLGFART-L7V4X92J1d9HKMONk1UE6wZwKDpEPssdvhxVwBnY9Gsw
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:40:38 GMT
+Content-Length: 340
+
+{"authorizations":["http://127.0.0.1:8200/v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f"],"expires":"2026-02-08T00:40:38Z","finalize":"http://127.0.0.1:8200/v1/pki_int/acme/order/02e17f4d-d888-60c2-f55c-75a7c59f6da0/finalize","identifiers":[{"type":"dns","value":"testserver.solar.energy.internal"}],"status":"pending"}
+2026-02-07 01:40:38,976:DEBUG:acme.client:Storing nonce: dmF1bHQw5bnLGFART-L7V4X92J1d9HKMONk1UE6wZwKDpEPssdvhxVwBnY9Gsw
+2026-02-07 01:40:38,976:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:40:38,978:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXc1Ym5MR0ZBUlQtTDdWNFg5MkoxZDlIS01PTmsxVUU2d1p3S0RwRVBzc2R2aHhWd0JuWTlHc3ciLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi9kZDI2Y2MzZi1iYzZlLTU1MGYtZmVkMy0yZGY1NjUxMzE2MmYifQ",
+  "signature": "S2oZRk7d4I8SPAOcWHlMwf1_F5v74iVSC7MtjjcC3-QY7zCVN3cY9GMc-_X2DyaGoPzRG5f3L6Lgwf-o2e8qmkiRPJ9YaE4XfYDOJ8rGw8CO5P8kZse-iSYeCveRtmbBt4QuNEXA1PDSatS6qRYqWwNpzFj1SQV48k-a0oQ26FM1rMdcuQvY5YQiDGJliXNkZuKhBfK51Z6ZKtJsmaSfF6RODT58TFGIUAZzmKOSAMYVv4_me97Lj3UuS1Cw5j7HBVYULIbHScjkN-way41igbFmtQiZujlnkedqF4K0PNMOiGgvgHQCVRquxfhUF8uWl0_VRBVkbG-60O7feIUNAw",
+  "payload": ""
+}
+2026-02-07 01:40:38,987:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f HTTP/1.1" 200 663
+2026-02-07 01:40:38,987:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQwMlCULPhxsdKqksTT9ku3q877A9VKfzB5ElUcYA9Y6mzIDKggizhW0Q
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:40:38 GMT
+Content-Length: 663
+
+{"challenges":[{"status":"pending","token":"l5jfhadUISq4U9CFkwmjgrfsruLs","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/http-01"},{"status":"pending","token":"zHu8CWqMtPLhPgAFNS_5IHDRykUs","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/dns-01"},{"status":"pending","token":"QPF9yf26nSsfFP2TI1xt9qErudhI","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/tls-alpn-01"}],"identifier":{"type":"dns","value":"testserver.solar.energy.internal"},"status":"pending","wildcard":false}
+2026-02-07 01:40:38,987:DEBUG:acme.client:Storing nonce: dmF1bHQwMlCULPhxsdKqksTT9ku3q877A9VKfzB5ElUcYA9Y6mzIDKggizhW0Q
+2026-02-07 01:40:38,988:INFO:certbot._internal.auth_handler:Performing the following challenges:
+2026-02-07 01:40:38,988:INFO:certbot._internal.auth_handler:http-01 challenge for testserver.solar.energy.internal
+2026-02-07 01:40:39,003:DEBUG:acme.standalone:Successfully bound to :9999 using IPv6
+2026-02-07 01:40:39,004:DEBUG:acme.standalone:Certbot wasn't able to bind to :9999 using IPv4, this is often expected due to the dual stack nature of IPv6 socket implementations.
+2026-02-07 01:40:39,004:DEBUG:acme.client:JWS payload:
+b'{}'
+2026-02-07 01:40:39,005:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/http-01:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXdNbENVTFBoeHNkS3Frc1RUOWt1M3E4NzdBOVZLZnpCNUVsVWNZQTlZNm16SURLZ2dpemhXMFEiLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvY2hhbGxlbmdlL2RkMjZjYzNmLWJjNmUtNTUwZi1mZWQzLTJkZjU2NTEzMTYyZi9odHRwLTAxIn0",
+  "signature": "UKyK3mEEe-Fw-dYn6V4_7Huk8atnSZgwjYnHFsJbl8XcAK6zpQbtSsqNKTh5emGWrqYFpw-2K9k5BPFrUlbMzmt9g4Kvh_T_iBU4KJk3d1Ty_xDu98QmOrN9oy8QWidKhNKpkTiMGXM9ydXqH2loB7SEC2xddEfyjOETKaNjAiyh3pJFEiAJ_GhQaRtrfKWPCGJLq-sM6ipHaEGaAmTXGWFOwwD2nPet41W-yGSX0K9qLAD97vnnRlESGSlpLqYykbUgMl-3yD5bkQ1HuNfT9YJ_yCWW8k7ac-q3fodHTH0zC_yj7-BPQPLi7zo4kHyC1tfyGTwGu2QumvHlOr12pg",
+  "payload": "e30"
+}
+2026-02-07 01:40:39,008:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/http-01 HTTP/1.1" 200 180
+2026-02-07 01:40:39,009:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f>;rel="up", <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQwmmaQcwE_ieCwpwRTHgkNMvtJqi3uIl6RgqNwmNN-U49gwlKxWpT4Bw
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:40:39 GMT
+Content-Length: 180
+
+{"status":"processing","token":"l5jfhadUISq4U9CFkwmjgrfsruLs","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/http-01"}
+2026-02-07 01:40:39,009:DEBUG:acme.client:Storing nonce: dmF1bHQwmmaQcwE_ieCwpwRTHgkNMvtJqi3uIl6RgqNwmNN-U49gwlKxWpT4Bw
+2026-02-07 01:40:39,009:INFO:certbot._internal.auth_handler:Waiting for verification...
+2026-02-07 01:40:40,014:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:40:40,016:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXdtbWFRY3dFX2llQ3dwd1JUSGdrTk12dEpxaTN1SWw2UmdxTndtTk4tVTQ5Z3dsS3hXcFQ0QnciLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi9kZDI2Y2MzZi1iYzZlLTU1MGYtZmVkMy0yZGY1NjUxMzE2MmYifQ",
+  "signature": "HoKitVe1tCLeYm3VNpsXD4vvOLwGwJNNhrMaIvY6GpySHkXmA1dOamYnX2oIAtVEpQSFsb-dv0HWNdcvsRaywP3oWaqHTfBzMmTPkfTbd--mGpvGTD5N4yqA6yqTMpiZGM_tZRe4Bbv-5W10yns0lQ07oix52BG4IdKjZbj7SvxPyHds8QGRSxs1lXUbqUgHcA2AB616TUSeZUvN4dC3hO0TrY9HdxL0iiBZys_WOS_mpb31SdtIEntKHsW6q7Igu1syvFXA4oLfwITNpBKh9pJ0owuVmpTYaD026drWnU0WKtoBIhEaZ7Diy6HSseArbCJqOD9CaXnCE1hTFgtxbA",
+  "payload": ""
+}
+2026-02-07 01:40:40,023:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f HTTP/1.1" 200 1370
+2026-02-07 01:40:40,024:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQwee4V8IipuBci2EvHtoxzIt394G1S5A_u7Ln_a_kLxlm6IKN3h7waqg
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:40:40 GMT
+Content-Length: 1370
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge dd26cc3f-bc6e-550f-fed3-2df56513162f-http-01: http-01: failed to fetch path http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs: Get \"http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs\": dial tcp: lookup testserver.solar.energy.internal on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"l5jfhadUISq4U9CFkwmjgrfsruLs","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/http-01"},{"status":"pending","token":"zHu8CWqMtPLhPgAFNS_5IHDRykUs","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/dns-01"},{"status":"pending","token":"QPF9yf26nSsfFP2TI1xt9qErudhI","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/tls-alpn-01"}],"identifier":{"type":"dns","value":"testserver.solar.energy.internal"},"status":"pending","wildcard":false}
+2026-02-07 01:40:40,024:DEBUG:acme.client:Storing nonce: dmF1bHQwee4V8IipuBci2EvHtoxzIt394G1S5A_u7Ln_a_kLxlm6IKN3h7waqg
+2026-02-07 01:40:43,029:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:40:43,031:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXdlZTRWOElpcHVCY2kyRXZIdG94ekl0Mzk0RzFTNUFfdTdMbl9hX2tMeGxtNklLTjNoN3dhcWciLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi9kZDI2Y2MzZi1iYzZlLTU1MGYtZmVkMy0yZGY1NjUxMzE2MmYifQ",
+  "signature": "WpEhBzVkIlwPm1Jp3l39oBwBjSZh_FZc-4lmiYhEyYvjGZ8RuyL7q8yGdG5DFVGCuphh1dIUiWMZAkrxNfRDB-DyOiWUOhrZrXpLP7AeUGVe0uRb7z9mAD7Fp9HNn3qCRu-UhbLUbFY_DIGa3vQI-fs57KyPKYrQmq9xHhj9cywXanb63HJ0jZJi7V8a1doRuQWw7EC0Ll53Ec1rhqt2bSBKB7At_XfsdzcrV6FAHzUXqNPcgbWBBB-D8HzdsAEjm-lULzZWFJMFOvMeAz9s4j-hGeQYuoLkZBromI3hKpbIFuPw7k5wuZ3A25JLGrMYuuTNGmI4renVdGXDgJknDw",
+  "payload": ""
+}
+2026-02-07 01:40:43,036:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f HTTP/1.1" 200 1370
+2026-02-07 01:40:43,037:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQwlbphwtGFEhuq8Km2mvD8iGuuETG03jdZiwQ6oqJiH4zLqGzYgNXi1w
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:40:43 GMT
+Content-Length: 1370
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge dd26cc3f-bc6e-550f-fed3-2df56513162f-http-01: http-01: failed to fetch path http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs: Get \"http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs\": dial tcp: lookup testserver.solar.energy.internal on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"l5jfhadUISq4U9CFkwmjgrfsruLs","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/http-01"},{"status":"pending","token":"zHu8CWqMtPLhPgAFNS_5IHDRykUs","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/dns-01"},{"status":"pending","token":"QPF9yf26nSsfFP2TI1xt9qErudhI","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/tls-alpn-01"}],"identifier":{"type":"dns","value":"testserver.solar.energy.internal"},"status":"pending","wildcard":false}
+2026-02-07 01:40:43,037:DEBUG:acme.client:Storing nonce: dmF1bHQwlbphwtGFEhuq8Km2mvD8iGuuETG03jdZiwQ6oqJiH4zLqGzYgNXi1w
+2026-02-07 01:40:46,040:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:40:46,043:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXdsYnBod3RHRkVodXE4S20ybXZEOGlHdXVFVEcwM2pkWml3UTZvcUppSDR6THFHellnTlhpMXciLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi9kZDI2Y2MzZi1iYzZlLTU1MGYtZmVkMy0yZGY1NjUxMzE2MmYifQ",
+  "signature": "M3cWiyELgg6w5rKECm5hYeRrAm1IN69KhCezfPnbNti9Cv6Wm7LhEYJxNNdcacTawOeUAxBALIfY6zNR7jiA08de4R6jmFA_zwmYjLNkyjprDdPGp2Zrn9cNqn4K8uJejv6U7youjkcr5XFo6QeWrC0U8e6Fsuw8JoO4L8H2pINJLSLsmrGc_LKO_iUXh1ErkAsPZIe_sjqTALsTP1qUBU-oDOMWf1TUemiIS73b5K1yVBXGvqvVY-gHOfrnvG8Y58DhEEjC2AuMbM99SVrNrl-sDyyZfb9bBa24UgX_wsdSNErND-wycVSo5ICqd-YXZfbbGgye3sqSdWByLiZK8A",
+  "payload": ""
+}
+2026-02-07 01:40:46,049:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f HTTP/1.1" 200 1370
+2026-02-07 01:40:46,049:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQwR1P7ZXKTzRfO6Ual02O8sV3yR_GrihfEGkaqYJbNVx9cNRrQWGwfrg
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:40:46 GMT
+Content-Length: 1370
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge dd26cc3f-bc6e-550f-fed3-2df56513162f-http-01: http-01: failed to fetch path http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs: Get \"http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs\": dial tcp: lookup testserver.solar.energy.internal on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"l5jfhadUISq4U9CFkwmjgrfsruLs","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/http-01"},{"status":"pending","token":"zHu8CWqMtPLhPgAFNS_5IHDRykUs","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/dns-01"},{"status":"pending","token":"QPF9yf26nSsfFP2TI1xt9qErudhI","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/tls-alpn-01"}],"identifier":{"type":"dns","value":"testserver.solar.energy.internal"},"status":"pending","wildcard":false}
+2026-02-07 01:40:46,050:DEBUG:acme.client:Storing nonce: dmF1bHQwR1P7ZXKTzRfO6Ual02O8sV3yR_GrihfEGkaqYJbNVx9cNRrQWGwfrg
+2026-02-07 01:40:49,055:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:40:49,058:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXdSMVA3WlhLVHpSZk82VWFsMDJPOHNWM3lSX0dyaWhmRUdrYXFZSmJOVng5Y05SclFXR3dmcmciLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi9kZDI2Y2MzZi1iYzZlLTU1MGYtZmVkMy0yZGY1NjUxMzE2MmYifQ",
+  "signature": "jtAmRJzbcmtI8KKbCB2HaTMT-nmbp48jRdyniF2DWVXtu7EWbIvliB9ORSRo-rlzDiA0msrlzPESXTXc5uvE306S5Ivkq8Na-1IwcLRR8gwReVLYSDy_n6QkZT_v7a6LjmVv-DwnadBM0irNJSqQQ9KmNcNfoahOJfhN4XKPaa9gCXieP_WcWZc_QiY-Af80G_3XzMT5jg9xv5Nt5DHx7szSe_TwhvmCjCjUiuZ7Ou3tpvAW_k5Sl6k8HrM7cPsM0JtTO1BtsVuwtNPoiLdSRSSl8qdRfxZ1kQ3gHonp49VF6h4bJiukb_uhxq7B5SodAsnv23MYQIIRG0xBIH9UVQ",
+  "payload": ""
+}
+2026-02-07 01:40:49,063:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f HTTP/1.1" 200 1370
+2026-02-07 01:40:49,063:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQwgxrPI4Dtt5r7ePFO44vVU9Rtz0rLVhsg0IvxnuHjk9t0799ZqyrBmw
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:40:49 GMT
+Content-Length: 1370
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge dd26cc3f-bc6e-550f-fed3-2df56513162f-http-01: http-01: failed to fetch path http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs: Get \"http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs\": dial tcp: lookup testserver.solar.energy.internal on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"l5jfhadUISq4U9CFkwmjgrfsruLs","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/http-01"},{"status":"pending","token":"zHu8CWqMtPLhPgAFNS_5IHDRykUs","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/dns-01"},{"status":"pending","token":"QPF9yf26nSsfFP2TI1xt9qErudhI","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/tls-alpn-01"}],"identifier":{"type":"dns","value":"testserver.solar.energy.internal"},"status":"pending","wildcard":false}
+2026-02-07 01:40:49,063:DEBUG:acme.client:Storing nonce: dmF1bHQwgxrPI4Dtt5r7ePFO44vVU9Rtz0rLVhsg0IvxnuHjk9t0799ZqyrBmw
+2026-02-07 01:40:52,066:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:40:52,068:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXdneHJQSTREdHQ1cjdlUEZPNDR2VlU5UnR6MHJMVmhzZzBJdnhudUhqazl0MDc5OVpxeXJCbXciLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi9kZDI2Y2MzZi1iYzZlLTU1MGYtZmVkMy0yZGY1NjUxMzE2MmYifQ",
+  "signature": "SUcA3K-GfguxRSLkqn9e4ViK9BP9mznECDaxQGLBe_dO72xahS4GY_KtK3T3kVuh7fTLImNYbfoCApwHX4ZiXzFoozq4vnxwHQY7Bg9g6LsN6zApkr3M9SiW-Aj-qwoBITWbKYVbeaBxTIEddtNExPv0hUARyEM2o-vCUTX8IciF2nLe3xGO-gLBtt9pUJ-ClbmRnSFEokD0b2x973P3-FFg-f0RTKHm3HARSeZ3Hd5PUdnXaXNbcPvpBkQ_TWloKNAd8JTFwdxY-fhntDI9d25mnwHZfEL09csRd0nfmvVChZuePJdJpFDgpybiLhUvftsPHI0olAeF0r9Kgx1dKQ",
+  "payload": ""
+}
+2026-02-07 01:40:52,080:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f HTTP/1.1" 200 1370
+2026-02-07 01:40:52,080:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQwsxECPU-6FSzCYA-kCHYViGt8TDEpWgGCrMFI6V1EqaU3EXkYUPtvQA
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:40:52 GMT
+Content-Length: 1370
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge dd26cc3f-bc6e-550f-fed3-2df56513162f-http-01: http-01: failed to fetch path http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs: Get \"http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs\": dial tcp: lookup testserver.solar.energy.internal on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"l5jfhadUISq4U9CFkwmjgrfsruLs","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/http-01"},{"status":"pending","token":"zHu8CWqMtPLhPgAFNS_5IHDRykUs","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/dns-01"},{"status":"pending","token":"QPF9yf26nSsfFP2TI1xt9qErudhI","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/tls-alpn-01"}],"identifier":{"type":"dns","value":"testserver.solar.energy.internal"},"status":"pending","wildcard":false}
+2026-02-07 01:40:52,080:DEBUG:acme.client:Storing nonce: dmF1bHQwsxECPU-6FSzCYA-kCHYViGt8TDEpWgGCrMFI6V1EqaU3EXkYUPtvQA
+2026-02-07 01:40:55,084:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:40:55,089:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXdzeEVDUFUtNkZTekNZQS1rQ0hZVmlHdDhUREVwV2dHQ3JNRkk2VjFFcWFVM0VYa1lVUHR2UUEiLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi9kZDI2Y2MzZi1iYzZlLTU1MGYtZmVkMy0yZGY1NjUxMzE2MmYifQ",
+  "signature": "DXy6-sMB4XUVU44XEi1e5Moe60oj7C2Hsb77m84zDO-tAFCMpGm6Er3NR-6zMMRF-_Q1OrP5atks3GKMSg4mIWNEC0raJUv2IhxNuh3lKoHKbh2EJyrf0NWt6mk-u1Gz6OFi3BLQtMJdZEs0U36hKXyTunOSgoMSQHj9XluFlgfebeFqNmIjuXkPgXdUrPfQBkW6qayD9mV4bQq3jM6_sISDy7hQ5vDjFSm7KTztllocN-XT4_utICXpeIjvCXxy_CXT5fMkCc7KDZUQL-A0darRAoxdrEolBwAmo83Vm7veMw21hNHdCVZDQ0hQ4iCAPF7HPRxUGk1whArNE63eUg",
+  "payload": ""
+}
+2026-02-07 01:40:55,092:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f HTTP/1.1" 200 1370
+2026-02-07 01:40:55,092:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQwTCPS2FCk5PILhkaWynh4kie9lnEIWBiI-_drJHfRcU4Vc_w8tKtSxA
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:40:55 GMT
+Content-Length: 1370
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge dd26cc3f-bc6e-550f-fed3-2df56513162f-http-01: http-01: failed to fetch path http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs: Get \"http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs\": dial tcp: lookup testserver.solar.energy.internal on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"l5jfhadUISq4U9CFkwmjgrfsruLs","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/http-01"},{"status":"pending","token":"zHu8CWqMtPLhPgAFNS_5IHDRykUs","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/dns-01"},{"status":"pending","token":"QPF9yf26nSsfFP2TI1xt9qErudhI","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/tls-alpn-01"}],"identifier":{"type":"dns","value":"testserver.solar.energy.internal"},"status":"pending","wildcard":false}
+2026-02-07 01:40:55,093:DEBUG:acme.client:Storing nonce: dmF1bHQwTCPS2FCk5PILhkaWynh4kie9lnEIWBiI-_drJHfRcU4Vc_w8tKtSxA
+2026-02-07 01:40:58,097:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:40:58,100:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXdUQ1BTMkZDazVQSUxoa2FXeW5oNGtpZTlsbkVJV0JpSS1fZHJKSGZSY1U0VmNfdzh0S3RTeEEiLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi9kZDI2Y2MzZi1iYzZlLTU1MGYtZmVkMy0yZGY1NjUxMzE2MmYifQ",
+  "signature": "XXyf9KPfxWDYTvRQhSW_nximSgCffAYl1xJ0WnmEPr92XXbkcRNlY-rv3Rsl9q6Bu_PEEwWxYKRzqVpNWIz2u3ML-hs7Sqgnj09qoiqafYtNRicRX5M9N-3fAyZZtv8FJ8n7o87XiWnNC7Buxpu71mO9NEXfmpZzv1shYYPNveSmzlOcRpFuhgn2s8nmeYAzr6jXNrJF91KU5-CGzODJO5o1j8BljF5Y7Wj0MozIRy9IiI2ODcJvTP1EgJAw81bJDx91b7RPbJjwtEf1GNoLhOhehHG_-C8yg_kPJosWlcgO3Xcxog1oK2soFzOBobNkWbenOSTbesDUOap8Fc67Vw",
+  "payload": ""
+}
+2026-02-07 01:40:58,108:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f HTTP/1.1" 200 1370
+2026-02-07 01:40:58,109:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQwqzbht5_AkVIxOC4gVBgHxDn9c3eduFs7lz5CP_OfRP1zGyUdrQpSMA
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:40:58 GMT
+Content-Length: 1370
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge dd26cc3f-bc6e-550f-fed3-2df56513162f-http-01: http-01: failed to fetch path http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs: Get \"http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs\": dial tcp: lookup testserver.solar.energy.internal on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"l5jfhadUISq4U9CFkwmjgrfsruLs","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/http-01"},{"status":"pending","token":"zHu8CWqMtPLhPgAFNS_5IHDRykUs","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/dns-01"},{"status":"pending","token":"QPF9yf26nSsfFP2TI1xt9qErudhI","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/tls-alpn-01"}],"identifier":{"type":"dns","value":"testserver.solar.energy.internal"},"status":"pending","wildcard":false}
+2026-02-07 01:40:58,109:DEBUG:acme.client:Storing nonce: dmF1bHQwqzbht5_AkVIxOC4gVBgHxDn9c3eduFs7lz5CP_OfRP1zGyUdrQpSMA
+2026-02-07 01:41:01,115:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:41:01,118:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXdxemJodDVfQWtWSXhPQzRnVkJnSHhEbjljM2VkdUZzN2x6NUNQX09mUlAxekd5VWRyUXBTTUEiLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi9kZDI2Y2MzZi1iYzZlLTU1MGYtZmVkMy0yZGY1NjUxMzE2MmYifQ",
+  "signature": "Q3C46VjLklT405PkG2Bn-KY8ZG_ITFi3H8VGshl_0NktMSI3EKMXeJmpMxSTgTtd4re6p0MNW2jrQ4Kljrfj2gtM_eHVviG4HtFv6UVdmywhLCuzWO-AXBdCXYtEiCe_7vIMdcqmB1c7NGC4wJsnpqsmAl1v5QMpHt877scFBWp4aGUSL-z6jDu4fAvecMYcv_M2qe0OxmbxePtcalRMB7xegLZroaCe4YVhjHvENFL4jc4eEeywjalbTrqVKZeT3LlfVC7qC1nEoTsmS_BYZuX2wpBOiDwIhdNQv7PauK1OOH7ei8g7CQmGypNSqm_lyTS2TOOTosKjoLChzuoVTQ",
+  "payload": ""
+}
+2026-02-07 01:41:01,126:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f HTTP/1.1" 200 1370
+2026-02-07 01:41:01,127:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQw2TBTUUnBohm59Fi0OFiDr8PCXTYDNeT7Do1vp9WBhVcQdnTZxnw4bQ
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:41:01 GMT
+Content-Length: 1370
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge dd26cc3f-bc6e-550f-fed3-2df56513162f-http-01: http-01: failed to fetch path http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs: Get \"http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs\": dial tcp: lookup testserver.solar.energy.internal on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"l5jfhadUISq4U9CFkwmjgrfsruLs","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/http-01"},{"status":"pending","token":"zHu8CWqMtPLhPgAFNS_5IHDRykUs","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/dns-01"},{"status":"pending","token":"QPF9yf26nSsfFP2TI1xt9qErudhI","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/tls-alpn-01"}],"identifier":{"type":"dns","value":"testserver.solar.energy.internal"},"status":"pending","wildcard":false}
+2026-02-07 01:41:01,127:DEBUG:acme.client:Storing nonce: dmF1bHQw2TBTUUnBohm59Fi0OFiDr8PCXTYDNeT7Do1vp9WBhVcQdnTZxnw4bQ
+2026-02-07 01:41:04,132:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:41:04,137:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXcyVEJUVVVuQm9obTU5RmkwT0ZpRHI4UENYVFlETmVUN0RvMXZwOVdCaFZjUWRuVFp4bnc0YlEiLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi9kZDI2Y2MzZi1iYzZlLTU1MGYtZmVkMy0yZGY1NjUxMzE2MmYifQ",
+  "signature": "M2GlYBkJhoVVkYeNqxKPqTjT84976Cx_fl2kffY8wR5pUxuQys37DgZKm05t0K4sVAVIFWBs8VId6vzcrcO8RubWc1WwZmGW6nIHBzpKRvieqjh5YtVXdRl5JXk_ht0KMtQqghgdtJB9dMuXdcu-CwAT5j7C12nCpLAWbBSblKzpKqKpKN3Qs28RX81uaI6EbHnQnkWQGL2Fv4vbGkXJ79kLXqduGU07orI5dopwKxKCRdPfv0nKq7rrlsKR_iQM9GkXcR7D94CLiyTw7xz8uDk6FOfPWkg5_WLCl-6CpH7_-_p6ERSlpn5omrDHLsme6lD28a419uSl2CNMbbm4Gw",
+  "payload": ""
+}
+2026-02-07 01:41:04,143:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f HTTP/1.1" 200 1370
+2026-02-07 01:41:04,144:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQwRMgV6hZPfNIjm3in1kypnpnFDdK0cTcRXb6RXUVuWurJscbm8fCEgA
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:41:04 GMT
+Content-Length: 1370
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge dd26cc3f-bc6e-550f-fed3-2df56513162f-http-01: http-01: failed to fetch path http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs: Get \"http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs\": dial tcp: lookup testserver.solar.energy.internal on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"l5jfhadUISq4U9CFkwmjgrfsruLs","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/http-01"},{"status":"pending","token":"zHu8CWqMtPLhPgAFNS_5IHDRykUs","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/dns-01"},{"status":"pending","token":"QPF9yf26nSsfFP2TI1xt9qErudhI","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/tls-alpn-01"}],"identifier":{"type":"dns","value":"testserver.solar.energy.internal"},"status":"pending","wildcard":false}
+2026-02-07 01:41:04,144:DEBUG:acme.client:Storing nonce: dmF1bHQwRMgV6hZPfNIjm3in1kypnpnFDdK0cTcRXb6RXUVuWurJscbm8fCEgA
+2026-02-07 01:41:07,147:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:41:07,153:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXdSTWdWNmhaUGZOSWptM2luMWt5cG5wbkZEZEswY1RjUlhiNlJYVVZ1V3VySnNjYm04ZkNFZ0EiLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi9kZDI2Y2MzZi1iYzZlLTU1MGYtZmVkMy0yZGY1NjUxMzE2MmYifQ",
+  "signature": "gkDXTC0vrmhFyxQA7MX9p_Enjw0sCenrHSK01AlVK-YJHKMmPRb2kypHToB1jpUXDfxzLKhWu8qXaPYMl1jC1sZPJJc5nJwsdHippdKf-BCaRK-hji6x4QOk2p0ItLV7l6MNQOk9sgkMjoWusXIS2hn_DtQYpd2wJI5f5SOe6JmKL1dgT2Am3D-aM5_XaNs2iF2pE50EYVwdufZOg8dZ5yKbfbraMuDWKbm-ogw_7hJyv7577gSvwYcVehUjgqXFbfNDS9gnAIk10q49ytBHWrxyqqO14sKoKTJCyRnFFudrCKia63xgrQsuzSKvKGCiZZjoeYJIfr0oKBZKwdIG0Q",
+  "payload": ""
+}
+2026-02-07 01:41:07,162:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f HTTP/1.1" 200 1370
+2026-02-07 01:41:07,162:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQws5XO3SJWJaOudyDGxFKHxx01iHdKVPGduniBLH3bHGSRO6AVxZ9ccg
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:41:07 GMT
+Content-Length: 1370
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge dd26cc3f-bc6e-550f-fed3-2df56513162f-http-01: http-01: failed to fetch path http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs: Get \"http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs\": dial tcp: lookup testserver.solar.energy.internal on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"l5jfhadUISq4U9CFkwmjgrfsruLs","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/http-01"},{"status":"pending","token":"zHu8CWqMtPLhPgAFNS_5IHDRykUs","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/dns-01"},{"status":"pending","token":"QPF9yf26nSsfFP2TI1xt9qErudhI","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/tls-alpn-01"}],"identifier":{"type":"dns","value":"testserver.solar.energy.internal"},"status":"pending","wildcard":false}
+2026-02-07 01:41:07,162:DEBUG:acme.client:Storing nonce: dmF1bHQws5XO3SJWJaOudyDGxFKHxx01iHdKVPGduniBLH3bHGSRO6AVxZ9ccg
+2026-02-07 01:41:10,168:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:41:10,172:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXdzNVhPM1NKV0phT3VkeURHeEZLSHh4MDFpSGRLVlBHZHVuaUJMSDNiSEdTUk82QVZ4WjljY2ciLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi9kZDI2Y2MzZi1iYzZlLTU1MGYtZmVkMy0yZGY1NjUxMzE2MmYifQ",
+  "signature": "G12yd7Hm5Hg_lpB6kBoURir0UX-YjbwRzmqLz7G--CL5IRzYj8CnGiDxmsYzY-2sAlW_ajmdmROLQ9dNV1B4xQKZUtuIkDc-_Mk6QZwrRoQEQF-BgvWJ7-bNsJaAupUKuYrc2q_EYIjf7wEuB0zFz7yc3_z-5kNUb1a0nmYrXyaeR9Q3jNjLCfcaKU4cr-g8lbt35dMlZa8nQ9sq2gVwM1ob9qDHApuKWzBeA4pP6V0ZTqAglVCL-i6n7kFqBVNBs2prtGYJ1-dMvF2k2kxRVrtMTNf0T2tDuGWzR6ZoGknE030kAAMPdQYT5MxMHxuryGhzcmhLhF_f6IXNGVnaEw",
+  "payload": ""
+}
+2026-02-07 01:41:10,179:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f HTTP/1.1" 200 1370
+2026-02-07 01:41:10,179:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQw7iWaiiNZjxb4SvLGiZTUygk4AaD8_FKLwGa6oSzRHahX5GEdn4z3_Q
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:41:10 GMT
+Content-Length: 1370
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge dd26cc3f-bc6e-550f-fed3-2df56513162f-http-01: http-01: failed to fetch path http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs: Get \"http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs\": dial tcp: lookup testserver.solar.energy.internal on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"l5jfhadUISq4U9CFkwmjgrfsruLs","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/http-01"},{"status":"pending","token":"zHu8CWqMtPLhPgAFNS_5IHDRykUs","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/dns-01"},{"status":"pending","token":"QPF9yf26nSsfFP2TI1xt9qErudhI","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/tls-alpn-01"}],"identifier":{"type":"dns","value":"testserver.solar.energy.internal"},"status":"pending","wildcard":false}
+2026-02-07 01:41:10,179:DEBUG:acme.client:Storing nonce: dmF1bHQw7iWaiiNZjxb4SvLGiZTUygk4AaD8_FKLwGa6oSzRHahX5GEdn4z3_Q
+2026-02-07 01:41:13,183:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:41:13,187:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXc3aVdhaWlOWmp4YjRTdkxHaVpUVXlnazRBYUQ4X0ZLTHdHYTZvU3pSSGFoWDVHRWRuNHozX1EiLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi9kZDI2Y2MzZi1iYzZlLTU1MGYtZmVkMy0yZGY1NjUxMzE2MmYifQ",
+  "signature": "dABtW9UW3WUYn4RjcF8QcCEmLVsRyZ9aAMcJbhcvZNY8CNkzNtMYaJP43zhQ-DW6CAb6uFSTe6DTk_XCwI5d54vxmASVXcJSk1_KxW8Uc5QQmCPd_lzj56KOkZyc4ZJwt3jmOK2PzKYHSCmOwlKYfc_6d3u9Y6Lbdic7_VhmkM0lKjYemWJ2Yw4ADSN-SjnyAWvBPwMqY6ZswZC-1JS8TKyaclYZszXL_zu3n5V2VgcFRQ4LHHqrz6-kMekULAKMh4qLHU93hPYU8DQrSTsxW7re_Obr1GXbD9V8WOXxpg8nKar6rMmA6zLoONBMtXWeLxA28NRM4EBFX1GEiR5jtA",
+  "payload": ""
+}
+2026-02-07 01:41:13,200:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f HTTP/1.1" 200 1370
+2026-02-07 01:41:13,200:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQw7-cfSTBd3xjKYVywyIKxS-rGzcnhErP3hlhyNBT0ej-UhaNagjU2rg
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:41:13 GMT
+Content-Length: 1370
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge dd26cc3f-bc6e-550f-fed3-2df56513162f-http-01: http-01: failed to fetch path http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs: Get \"http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs\": dial tcp: lookup testserver.solar.energy.internal on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"l5jfhadUISq4U9CFkwmjgrfsruLs","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/http-01"},{"status":"pending","token":"zHu8CWqMtPLhPgAFNS_5IHDRykUs","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/dns-01"},{"status":"pending","token":"QPF9yf26nSsfFP2TI1xt9qErudhI","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/tls-alpn-01"}],"identifier":{"type":"dns","value":"testserver.solar.energy.internal"},"status":"pending","wildcard":false}
+2026-02-07 01:41:13,200:DEBUG:acme.client:Storing nonce: dmF1bHQw7-cfSTBd3xjKYVywyIKxS-rGzcnhErP3hlhyNBT0ej-UhaNagjU2rg
+2026-02-07 01:41:16,204:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:41:16,209:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXc3LWNmU1RCZDN4aktZVnl3eUlLeFMtckd6Y25oRXJQM2hsaHlOQlQwZWotVWhhTmFnalUycmciLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi9kZDI2Y2MzZi1iYzZlLTU1MGYtZmVkMy0yZGY1NjUxMzE2MmYifQ",
+  "signature": "GhcmK7g5QiBrPUfNl-aFqYVgSSC0BPF5YPRQqrJdCDsC3H6MS4inRmV0qP9N4ldRyRXaHuOYEOthi2XrXRJAQf87mCZdsve9KBjNcQBV31EQCu8G2O8NQIl2WJkk7Dq1DxoIKv3x0CpSxmDUOQXEDQ6nX63Vvy_1qxb4-bqy5GXaWi1Jivr-_NRgtGnOUEBzWWkhssVweBdpt5092g4bguODLPnjfJyCJrQzV8zvw-EX1YFOQERMK4Mp1FFnhxZQXHSm-8ZWgGXJ_GA6AKRfIuZMhqSz3lOBg3LiYt6zPB0uY67j3s1SUY1deNzejETntm_XEBHSZXwHwYzVnYX92A",
+  "payload": ""
+}
+2026-02-07 01:41:16,216:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f HTTP/1.1" 200 1370
+2026-02-07 01:41:16,216:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQwgUUGbRvtarqdltn_OfAb6FOi7eCPzOmEbK1KiKaONQPnkTjVgDF_rw
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:41:16 GMT
+Content-Length: 1370
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge dd26cc3f-bc6e-550f-fed3-2df56513162f-http-01: http-01: failed to fetch path http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs: Get \"http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs\": dial tcp: lookup testserver.solar.energy.internal on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"l5jfhadUISq4U9CFkwmjgrfsruLs","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/http-01"},{"status":"pending","token":"zHu8CWqMtPLhPgAFNS_5IHDRykUs","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/dns-01"},{"status":"pending","token":"QPF9yf26nSsfFP2TI1xt9qErudhI","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/tls-alpn-01"}],"identifier":{"type":"dns","value":"testserver.solar.energy.internal"},"status":"pending","wildcard":false}
+2026-02-07 01:41:16,216:DEBUG:acme.client:Storing nonce: dmF1bHQwgUUGbRvtarqdltn_OfAb6FOi7eCPzOmEbK1KiKaONQPnkTjVgDF_rw
+2026-02-07 01:41:19,222:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:41:19,225:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXdnVVVHYlJ2dGFycWRsdG5fT2ZBYjZGT2k3ZUNQek9tRWJLMUtpS2FPTlFQbmtUalZnREZfcnciLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi9kZDI2Y2MzZi1iYzZlLTU1MGYtZmVkMy0yZGY1NjUxMzE2MmYifQ",
+  "signature": "fgE4U6P-S04dRWoMnNzU5V026PIvGDPFrDMVGqybjH-GchAgpUzfbUvOn4RDpBBQZ7pybkzRSD335ZMwpzn55E8I9xsP1jtaKgaAE1DtiJiAFjUoT-YJVmy9ZQlnr8FNF_qSl71qChKmIyYhixBiMk7ETRtmHGDd_rD13p_YRGQ_HK6cknVWPBD9B1lWrnOuS0Y4OgK8jKE8v-Ykn2RhW3qTD7Mm4jW6mf2O3Qp9UWTovTprir5xR6meaDyTlCOll5bML8qFx8hCwfd9a8V-6g7H0JbQGD9z3rlQnrxWePPu993KbD9YM_4jPS9FMEapXocs0k0m7j5NwgMmtYM5Mw",
+  "payload": ""
+}
+2026-02-07 01:41:19,231:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f HTTP/1.1" 200 1370
+2026-02-07 01:41:19,232:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQwat7nPwRLpRUCo10tezIbIx4OLk1RaKnbrNEuV4sHmcBRVI7Q_lfS4A
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:41:19 GMT
+Content-Length: 1370
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge dd26cc3f-bc6e-550f-fed3-2df56513162f-http-01: http-01: failed to fetch path http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs: Get \"http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs\": dial tcp: lookup testserver.solar.energy.internal on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"l5jfhadUISq4U9CFkwmjgrfsruLs","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/http-01"},{"status":"pending","token":"zHu8CWqMtPLhPgAFNS_5IHDRykUs","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/dns-01"},{"status":"pending","token":"QPF9yf26nSsfFP2TI1xt9qErudhI","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/tls-alpn-01"}],"identifier":{"type":"dns","value":"testserver.solar.energy.internal"},"status":"pending","wildcard":false}
+2026-02-07 01:41:19,232:DEBUG:acme.client:Storing nonce: dmF1bHQwat7nPwRLpRUCo10tezIbIx4OLk1RaKnbrNEuV4sHmcBRVI7Q_lfS4A
+2026-02-07 01:41:22,237:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:41:22,243:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXdhdDduUHdSTHBSVUNvMTB0ZXpJYkl4NE9MazFSYUtuYnJORXVWNHNIbWNCUlZJN1FfbGZTNEEiLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi9kZDI2Y2MzZi1iYzZlLTU1MGYtZmVkMy0yZGY1NjUxMzE2MmYifQ",
+  "signature": "hXeGHFwACGLa1sC1jGTeaqXlXiTGdphxZIBiNu-9k2hKNAK8T6TLVcUOhUoVX8i12-9lPZ15xMZBgsEUDVfif_lJJdGA2PFKOfMSLP1bwRHTBR8CfKCv6UW10M0omSnfOsKmUWkrfFAhsi6pZy00kgCR2uHyBYBR2I6wx4w8E7pTq5212FxY3yEJ-ZLmpTxQ7jnFFxWyx5R9m5LK1vPtzw2-Syj8LsYtMFSrvUQZ4J2-ADxXInsX-pHFOPUExa2FfRqRMUBpVV0bGUU9P7CHwqcxBYgqe-blLtJcbA8E14jWsd_ibILgRSecl9mW-K8s_9DLylgeM2Ag8fniVBM7Ww",
+  "payload": ""
+}
+2026-02-07 01:41:22,252:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f HTTP/1.1" 200 1370
+2026-02-07 01:41:22,252:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQw8ZGWraIutqaa3bfIq5nyYZh4YZB4luekjE8dCPBDftYIEfVVuXF3kw
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:41:22 GMT
+Content-Length: 1370
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge dd26cc3f-bc6e-550f-fed3-2df56513162f-http-01: http-01: failed to fetch path http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs: Get \"http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs\": dial tcp: lookup testserver.solar.energy.internal on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"l5jfhadUISq4U9CFkwmjgrfsruLs","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/http-01"},{"status":"pending","token":"zHu8CWqMtPLhPgAFNS_5IHDRykUs","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/dns-01"},{"status":"pending","token":"QPF9yf26nSsfFP2TI1xt9qErudhI","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/tls-alpn-01"}],"identifier":{"type":"dns","value":"testserver.solar.energy.internal"},"status":"pending","wildcard":false}
+2026-02-07 01:41:22,253:DEBUG:acme.client:Storing nonce: dmF1bHQw8ZGWraIutqaa3bfIq5nyYZh4YZB4luekjE8dCPBDftYIEfVVuXF3kw
+2026-02-07 01:41:25,256:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:41:25,262:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXc4WkdXcmFJdXRxYWEzYmZJcTVueVlaaDRZWkI0bHVla2pFOGRDUEJEZnRZSUVmVlZ1WEYza3ciLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi9kZDI2Y2MzZi1iYzZlLTU1MGYtZmVkMy0yZGY1NjUxMzE2MmYifQ",
+  "signature": "cFoxWWVP_Erf22smVX5ne2-o1s4eiNCQbvOVhTFKgreH2FI1CwN3F2uV1oXx4WPZEOnNnM_xG7tudITt3boVhUCXYxBmPj8DKeJxg40Ri-DVUODv6cH8ZbkDze2P2F0BI9AnBYIUFfKfoRt9UUah_j2WBm6bV98al--K3zXmVYzTE2t0Bl6aXgs-fv5ycIr5kty88I9BNT5XxoY56PcdPpO_ynSOHd3zfmcbgj_Q_B6yrbmTACBi3LrvAcR6rkWhM1Op8ooWhJccyNBPLtw2VP_N5BGyP5n96JLu9aB4OqlnyP8UdMuWrjKeY7m-mKU3sjaSIM5ly2XFkUGRvtoaPw",
+  "payload": ""
+}
+2026-02-07 01:41:25,280:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f HTTP/1.1" 200 1370
+2026-02-07 01:41:25,280:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQwx8JOmF9tplJCVXou4DD14LLqemfK3GM4QPwiZ7Dy5xk1QSM3HlMpyg
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:41:25 GMT
+Content-Length: 1370
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge dd26cc3f-bc6e-550f-fed3-2df56513162f-http-01: http-01: failed to fetch path http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs: Get \"http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs\": dial tcp: lookup testserver.solar.energy.internal on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"l5jfhadUISq4U9CFkwmjgrfsruLs","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/http-01"},{"status":"pending","token":"zHu8CWqMtPLhPgAFNS_5IHDRykUs","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/dns-01"},{"status":"pending","token":"QPF9yf26nSsfFP2TI1xt9qErudhI","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/tls-alpn-01"}],"identifier":{"type":"dns","value":"testserver.solar.energy.internal"},"status":"pending","wildcard":false}
+2026-02-07 01:41:25,280:DEBUG:acme.client:Storing nonce: dmF1bHQwx8JOmF9tplJCVXou4DD14LLqemfK3GM4QPwiZ7Dy5xk1QSM3HlMpyg
+2026-02-07 01:41:28,286:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:41:28,287:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXd4OEpPbUY5dHBsSkNWWG91NEREMTRMTHFlbWZLM0dNNFFQd2laN0R5NXhrMVFTTTNIbE1weWciLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi9kZDI2Y2MzZi1iYzZlLTU1MGYtZmVkMy0yZGY1NjUxMzE2MmYifQ",
+  "signature": "SdBTOOJEXklpvnMxCW6HU0TlJrMiBuoUD52NRFqUHlaZu8XesNO5MldYmJx8j5isczd1DoyBwg4kQUTnhVjjOmCo1jbM57vn0s5Bu39OC1BgmT5W-r3xugMdbrxQqkTeTQGNNy2P3rht-JFjpLefwY7_IUTFwmt5LKrnf4Z7kPFcxzEOdCdJRgPXRUK7c9QyKTO-4iqXnKMt4Iq7n1j2vbd8kkFl5PA0DweICIiteFXXw5S6NaTCh15Xn5qtc3sQbOp3KDys3lDRmJPtz26yMNe_gwhKwzLX07UiRlx_qfI1biBZDxOMkz_dbwfqYpm-Q2cKcMuYWhp17lule0dyBw",
+  "payload": ""
+}
+2026-02-07 01:41:28,296:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f HTTP/1.1" 200 1370
+2026-02-07 01:41:28,297:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQw8jZabgQUHwoGmkCzy-oXkfb4fP5ax0i8eOH-gmEvanK_WRWevkWbSg
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:41:28 GMT
+Content-Length: 1370
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge dd26cc3f-bc6e-550f-fed3-2df56513162f-http-01: http-01: failed to fetch path http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs: Get \"http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs\": dial tcp: lookup testserver.solar.energy.internal on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"l5jfhadUISq4U9CFkwmjgrfsruLs","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/http-01"},{"status":"pending","token":"zHu8CWqMtPLhPgAFNS_5IHDRykUs","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/dns-01"},{"status":"pending","token":"QPF9yf26nSsfFP2TI1xt9qErudhI","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/tls-alpn-01"}],"identifier":{"type":"dns","value":"testserver.solar.energy.internal"},"status":"pending","wildcard":false}
+2026-02-07 01:41:28,297:DEBUG:acme.client:Storing nonce: dmF1bHQw8jZabgQUHwoGmkCzy-oXkfb4fP5ax0i8eOH-gmEvanK_WRWevkWbSg
+2026-02-07 01:41:31,301:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:41:31,302:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXc4alphYmdRVUh3b0dta0N6eS1vWGtmYjRmUDVheDBpOGVPSC1nbUV2YW5LX1dSV2V2a1diU2ciLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi9kZDI2Y2MzZi1iYzZlLTU1MGYtZmVkMy0yZGY1NjUxMzE2MmYifQ",
+  "signature": "JdxVWsvK2mvFMfNA0TEOP3wMaGyyfDBoYCYeDlwwK-TuysL6i16093OIvNBb8BLQGldBI2eZsEHPLic8tojyHVQYh3VB773hUSanzX9di8B0dLgOkDhZE8N3-OfneS8dMGkFpBijHkQr8oMDdj-yBxiF6VfuD3lsDhhkxSJh0zxDm8FmQNNUMDMerJ5e8Cd-Ijf1XCgEF2v92MBf_WWYs6hUp6dAToyQiCSzAK1sKvkgewMqFrUdt_kGm8aatRg_aT4IPKsRdZPbKYCsrjr9kzzBoxcjdmcegkuZ0aLDv3T4l8x5ynChVbk0s8U8wU8yIsfNVSuhrp9lUGob7RRVrA",
+  "payload": ""
+}
+2026-02-07 01:41:31,310:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f HTTP/1.1" 200 1370
+2026-02-07 01:41:31,311:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQwtq-Mhc30u4Vcni6yw39ez5XbAhVTEQ96AguNOKwOShq2STKu02hVOg
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:41:31 GMT
+Content-Length: 1370
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge dd26cc3f-bc6e-550f-fed3-2df56513162f-http-01: http-01: failed to fetch path http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs: Get \"http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs\": dial tcp: lookup testserver.solar.energy.internal on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"l5jfhadUISq4U9CFkwmjgrfsruLs","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/http-01"},{"status":"pending","token":"zHu8CWqMtPLhPgAFNS_5IHDRykUs","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/dns-01"},{"status":"pending","token":"QPF9yf26nSsfFP2TI1xt9qErudhI","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/tls-alpn-01"}],"identifier":{"type":"dns","value":"testserver.solar.energy.internal"},"status":"pending","wildcard":false}
+2026-02-07 01:41:31,311:DEBUG:acme.client:Storing nonce: dmF1bHQwtq-Mhc30u4Vcni6yw39ez5XbAhVTEQ96AguNOKwOShq2STKu02hVOg
+2026-02-07 01:41:34,317:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:41:34,319:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXd0cS1NaGMzMHU0VmNuaTZ5dzM5ZXo1WGJBaFZURVE5NkFndU5PS3dPU2hxMlNUS3UwMmhWT2ciLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi9kZDI2Y2MzZi1iYzZlLTU1MGYtZmVkMy0yZGY1NjUxMzE2MmYifQ",
+  "signature": "NRQoWUrPYZuhQA5YHtFQQhqADV-RZ0gRvWOyOc2p-xZ-QjCz1l-35sVPYQOf4BSmnwvTwZivzTVmOwEA8gbN4flNMcBjaEEgAzuvMo3ZusgZVUZtROafbei5zpDLffKX1AUC1Kq1M66qV7jFv7qmH4gRNZby429hYmlfGK8Pv8DQ8utC3J9iCrUOrlD4WIEKq_yJWpjJQqdjdfFb-o8GMNBFDzeEaMQrijkfah-8TZv1Ub51S8x4qPL-QYy0txV1itRDfcenF-op1aO4IwwmV3O20RiJHGigBlYtfgvFIw7clyhShvPbt9g8iCPyUUEfTo5mI0gazSi8KvVCaNxGcQ",
+  "payload": ""
+}
+2026-02-07 01:41:34,326:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f HTTP/1.1" 200 1370
+2026-02-07 01:41:34,327:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQwR80ttzHjvoSXQ4Ce-ueoilzL5IF5ECH7BAbYV1SxRx5Xrahcpi_aJw
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:41:34 GMT
+Content-Length: 1370
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge dd26cc3f-bc6e-550f-fed3-2df56513162f-http-01: http-01: failed to fetch path http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs: Get \"http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs\": dial tcp: lookup testserver.solar.energy.internal on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"l5jfhadUISq4U9CFkwmjgrfsruLs","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/http-01"},{"status":"pending","token":"zHu8CWqMtPLhPgAFNS_5IHDRykUs","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/dns-01"},{"status":"pending","token":"QPF9yf26nSsfFP2TI1xt9qErudhI","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/tls-alpn-01"}],"identifier":{"type":"dns","value":"testserver.solar.energy.internal"},"status":"pending","wildcard":false}
+2026-02-07 01:41:34,327:DEBUG:acme.client:Storing nonce: dmF1bHQwR80ttzHjvoSXQ4Ce-ueoilzL5IF5ECH7BAbYV1SxRx5Xrahcpi_aJw
+2026-02-07 01:41:37,332:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:41:37,333:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXdSODB0dHpIanZvU1hRNENlLXVlb2lsekw1SUY1RUNIN0JBYllWMVN4Ung1WHJhaGNwaV9hSnciLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi9kZDI2Y2MzZi1iYzZlLTU1MGYtZmVkMy0yZGY1NjUxMzE2MmYifQ",
+  "signature": "msLA1_AZVKx8wsWM3Xl_N0OAIeNP3kuVF27pw2_GuA-FrtqwSv-_5h3qgDJyBYGr8h1P0PqyhxfNI6-V1F108R7UQxyOwDRI30vzHzZk1FzE_9rWmqBK34iRcbkhTymF5XoLTFE0n33E2dTCQWba4QYvLYHvnMVyD3eANmNLcYTZQ3LVCZuGXwHsYoh4rekaXNTeh3h2AjF09tGLtufV4eQCTATNnvYl4lALggbXNOjLABTlWI0idrpnGqQ93xOggbAbDHoAgU4KAUyeZv9ES3kj-aVZwC3l8bgCRNezA5mqmZQ6E6Zqpb8PRFLe-LWlRa3j78U17w1RbCAMCXbzZA",
+  "payload": ""
+}
+2026-02-07 01:41:37,337:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f HTTP/1.1" 200 1370
+2026-02-07 01:41:37,338:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQwSUxfP_VN3y5VseBu9ofoKv6L_bkRO5sfcujeOSU9UilP1woHr4mfxQ
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:41:37 GMT
+Content-Length: 1370
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge dd26cc3f-bc6e-550f-fed3-2df56513162f-http-01: http-01: failed to fetch path http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs: Get \"http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs\": dial tcp: lookup testserver.solar.energy.internal on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"l5jfhadUISq4U9CFkwmjgrfsruLs","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/http-01"},{"status":"pending","token":"zHu8CWqMtPLhPgAFNS_5IHDRykUs","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/dns-01"},{"status":"pending","token":"QPF9yf26nSsfFP2TI1xt9qErudhI","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/tls-alpn-01"}],"identifier":{"type":"dns","value":"testserver.solar.energy.internal"},"status":"pending","wildcard":false}
+2026-02-07 01:41:37,338:DEBUG:acme.client:Storing nonce: dmF1bHQwSUxfP_VN3y5VseBu9ofoKv6L_bkRO5sfcujeOSU9UilP1woHr4mfxQ
+2026-02-07 01:41:40,342:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:41:40,343:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXdTVXhmUF9WTjN5NVZzZUJ1OW9mb0t2NkxfYmtSTzVzZmN1amVPU1U5VWlsUDF3b0hyNG1meFEiLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi9kZDI2Y2MzZi1iYzZlLTU1MGYtZmVkMy0yZGY1NjUxMzE2MmYifQ",
+  "signature": "Y4Wyu5_K2Gqm3diUBKYGlPyUNJdy15xAi0OqlZCm8VQ2ZM1qt5GbFLAQtYTBhgZsDXLXIqVNBjgzjhMW9HvB5FzMaaDHDds5-tcBDIchp_FpVyYjxqHkUF0cfpGMIGo2ohyn7g8dnNukvv8-0khnR0cW8axDEJSY8zf2igAUdHRjAltHnc0MJrZ_fGEjKkWuPdvWJNE5Yh1ScJy2_xm8hV9qRUooGIBPSzH0v0_uqAJOVmOuZga7MFRTOcEkFalK1D-ApAZcSgV1eIw8sWUlDODVGkBNBLmQXNDgB1c6WWWOiosfAL5au9C7d3CbR3DqDEzt5mHRppg_H3ulI1UgXQ",
+  "payload": ""
+}
+2026-02-07 01:41:40,348:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f HTTP/1.1" 200 1370
+2026-02-07 01:41:40,348:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQw_OGFvfHqIWdp7z60u93u8c0qC4R28oSneXAGhmLhbGOGHj9uPN8Kow
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:41:40 GMT
+Content-Length: 1370
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge dd26cc3f-bc6e-550f-fed3-2df56513162f-http-01: http-01: failed to fetch path http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs: Get \"http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs\": dial tcp: lookup testserver.solar.energy.internal on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"l5jfhadUISq4U9CFkwmjgrfsruLs","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/http-01"},{"status":"pending","token":"zHu8CWqMtPLhPgAFNS_5IHDRykUs","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/dns-01"},{"status":"pending","token":"QPF9yf26nSsfFP2TI1xt9qErudhI","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/tls-alpn-01"}],"identifier":{"type":"dns","value":"testserver.solar.energy.internal"},"status":"pending","wildcard":false}
+2026-02-07 01:41:40,348:DEBUG:acme.client:Storing nonce: dmF1bHQw_OGFvfHqIWdp7z60u93u8c0qC4R28oSneXAGhmLhbGOGHj9uPN8Kow
+2026-02-07 01:41:43,354:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:41:43,357:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXdfT0dGdmZIcUlXZHA3ejYwdTkzdThjMHFDNFIyOG9TbmVYQUdobUxoYkdPR0hqOXVQTjhLb3ciLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi9kZDI2Y2MzZi1iYzZlLTU1MGYtZmVkMy0yZGY1NjUxMzE2MmYifQ",
+  "signature": "dgJwdm9TViKRFp2xsVLhEVTdWdaitMPcy1ps8oM0sZVhzc0Z9LfTVhCGUt45SpDNkMuMq5nnRB-jNMTUt9pBPYHUJucSkU7S90QxwvLmue68kpSD9rdt35mqpLDgeF7mqKK70gt9Emi-77WRRSahjtRKLlKTSOHb6Tp9kwq5rI_2eaVGulrc7JRBdoX059AS2OAb7JMrEotjOh4mmIq6rktOI8PkG2P1eHVQEdFTQfjUSXgt1nSzJcZvtWNoZh7ETg1Z4PxjbnC-9UwCjwDLCV5E_SkCF5RSYD1Kq9vGNku2Ig5VV6dyTyGeDW8kg7zstC0lUQtLdtKRzDY0HOzNnQ",
+  "payload": ""
+}
+2026-02-07 01:41:43,362:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/dd26cc3f-bc6e-550f-fed3-2df56513162f HTTP/1.1" 200 1370
+2026-02-07 01:41:43,363:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQwcBwpuULRK7Rlk4YTabFkuMidDVuNH2gvABinb-KFEIaqBWCrElqalA
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:41:43 GMT
+Content-Length: 1370
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge dd26cc3f-bc6e-550f-fed3-2df56513162f-http-01: http-01: failed to fetch path http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs: Get \"http://testserver.solar.energy.internal/.well-known/acme-challenge/l5jfhadUISq4U9CFkwmjgrfsruLs\": dial tcp: lookup testserver.solar.energy.internal on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"l5jfhadUISq4U9CFkwmjgrfsruLs","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/http-01"},{"status":"pending","token":"zHu8CWqMtPLhPgAFNS_5IHDRykUs","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/dns-01"},{"status":"pending","token":"QPF9yf26nSsfFP2TI1xt9qErudhI","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/dd26cc3f-bc6e-550f-fed3-2df56513162f/tls-alpn-01"}],"identifier":{"type":"dns","value":"testserver.solar.energy.internal"},"status":"pending","wildcard":false}
+2026-02-07 01:41:43,363:DEBUG:acme.client:Storing nonce: dmF1bHQwcBwpuULRK7Rlk4YTabFkuMidDVuNH2gvABinb-KFEIaqBWCrElqalA
+2026-02-07 01:41:44,600:DEBUG:certbot._internal.error_handler:Encountered exception:
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/certbot/4.2.0/libexec/lib/python3.13/site-packages/certbot/_internal/auth_handler.py", line 108, in handle_authorizations
+    self._poll_authorizations(authzrs, max_retries, max_time_mins, best_effort)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/certbot/4.2.0/libexec/lib/python3.13/site-packages/certbot/_internal/auth_handler.py", line 167, in _poll_authorizations
+    time.sleep(sleep_seconds)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^
+KeyboardInterrupt
+
+2026-02-07 01:41:44,601:DEBUG:certbot._internal.error_handler:Calling registered functions
+2026-02-07 01:41:44,601:INFO:certbot._internal.auth_handler:Cleaning up challenges
+2026-02-07 01:41:44,601:DEBUG:certbot._internal.plugins.standalone:Stopping server at :::9999...
+2026-02-07 01:41:44,646:ERROR:certbot._internal.log:Exiting due to user request.

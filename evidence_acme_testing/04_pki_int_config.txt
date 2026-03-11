@@ -1,0 +1,32 @@
+=== PKI Intermediate Configuration ===
+Key                              Value
+---                              -----
+crl_distribution_points          []
+delta_crl_distribution_points    []
+enable_templating                false
+issuing_certificates             []
+ocsp_servers                     []
+
+=== Intermediate CA Certificate ===
+-----BEGIN CERTIFICATE-----
+MIIDuzCCAqOgAwIBAgIUTkzxeEV0dM6EmH5Oyr+HDBc6NmMwDQYJKoZIhvcNAQEL
+BQAwITEfMB0GA1UEAxMWRW5lcmd5IENvbXBhbnkgUm9vdCBDQTAeFw0yNjAyMDcw
+MDM5NTBaFw0zMTAyMDYwMDQwMjBaMC0xKzApBgNVBAMTIkVuZXJneSBDb21wYW55
+IEs4cyBJbnRlcm1lZGlhdGUgQ0EwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
+AoIBAQD76nxseKTab/OIQkQlZ6NaNi7HFV4vPP8I8aHVhkttZyxntFNGPOT25ZvK
+wXDux6L1hRk54CRZ/9skWrKMOYM/yuJI+LzL8vSdq+fed6FTobgqgJNj/b97CWn2
+F+qoC0dQEXgRUWrFM6UtW93RrUg4dMeGm254QDKzHMHfwbrxNGAy5qqilRK9wbAH
+7zHtGTParE4Hp2Jvujk3mk2u+NtjpqlFrNHsPisVM108PmKolulGzg0vngHqATlE
+KLyPB7t3BZ+gGZH7H8Vmbnpou8Vru6/jrrEb0dRfPAb7NdswDQVOWtH/r9MnAVw4
+vSclDcbKGclZgiYn8OLCOOMtSUEpAgMBAAGjgd4wgdswDgYDVR0PAQH/BAQDAgEG
+MA8GA1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYEFICTtGDC0apAAr7yLFLl/jxtH0t+
+MB8GA1UdIwQYMBaAFFAAY8X9SnLGa5l0BqwNTyIW879wMEAGCCsGAQUFBwEBBDQw
+MjAwBggrBgEFBQcwAoYkaHR0cDovLzEyNy4wLjAuMTo4MjAwL3YxL3BraV9yb290
+L2NhMDYGA1UdHwQvMC0wK6ApoCeGJWh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9w
+a2lfcm9vdC9jcmwwDQYJKoZIhvcNAQELBQADggEBAIV6BeG9dMF1EAEEhk9gDCeC
+4ecHjIvZuzWXy6vbHHIDZ+Em4oabkVLkGfkfYtfFKsQDhAUDyA7vbiMlBOTeou2v
+thJudGRTsczEz3d9MbCfrNGXHW66xaqGG5NtTJ14h/sWdx/eh/+pSGDQZTkL8J51
+L59HOAFyR9Vo/swF21dsY+/reetRgn1aEy/HPuF1SXXgz8FsyS6xYomGyNAZOTFI
+F8ehEzYHGjK/O3QAl/pP3wo8pvw+jQpIG5hDHwbUGWFuQzhAqLSBN51E0SCETOMD
+ZaawRAzw4PPXT7Qxzx2UfAcKx4962XidjxkxBbN2y7yOIta49nT20npMA4gUc8Q=
+-----END CERTIFICATE-----

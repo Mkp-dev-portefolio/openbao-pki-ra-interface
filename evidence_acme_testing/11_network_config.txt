@@ -1,0 +1,14 @@
+=== Host Network Interfaces ===
+	inet 127.0.0.1 netmask 0xff000000
+	inet6 ::1 prefixlen 128 
+--
+	inet 192.168.2.1 netmask 0xffffff00 broadcast 192.168.2.255
+	inet6 fe80::3483:69ff:fe39:8880%bridge0 prefixlen 64 scopeid 0xf 
+--
+	inet 192.168.129.176 netmask 0xfffffe00 broadcast 192.168.129.255
+	nd6 options=221<PERFORMNUD,PROXY_PREFIXES,DAD>
+--
+	inet 192.168.3.1 netmask 0xffffff00 broadcast 192.168.3.255
+	inet6 fe80::f84d:89ff:fef7:9c64%bridge100 prefixlen 64 scopeid 0x16 
+
+=== Port Forward Status ===

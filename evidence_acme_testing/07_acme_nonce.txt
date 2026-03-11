@@ -1,0 +1,11 @@
+=== ACME Nonce Test ===
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+HTTP/1.1 200 OK
+Cache-Control: no-store
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQwn8h5LJg2zJfZ62pz-JYcujnID61eooxPETQ3m6SpPzJbcg6zh1FKTA
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:45:36 GMT
+

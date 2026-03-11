@@ -1,0 +1,126 @@
+=====================================================
+  OpenBao PKI - Certificate Lifecycle Monitor
+  Report Date: Thu Mar  5 09:00:01 CET 2026
+=====================================================
+
+
+[0;34m═══════════════════════════════════════════════[0m
+[0;34m  1. ROOT CA CERTIFICATE STATUS[0m
+[0;34m═══════════════════════════════════════════════[0m
+
+[0;34m━━━ Root CA ━━━[0m
+[0;32mStatus: ✅ VALID[0m
+Subject:  /CN=Energy Company Root CA
+Issuer:  /CN=Energy Company Root CA
+Serial: 3A6848679A127C7D665B32393F4721B1E316D916
+Valid From: Feb 27 09:47:25 2026 GMT
+Valid Until: Feb 25 09:47:55 2036 GMT
+[0;32mDays Remaining: 3644[0m
+
+[0;34m═══════════════════════════════════════════════[0m
+[0;34m  2. INTERMEDIATE CA CERTIFICATE STATUS[0m
+[0;34m═══════════════════════════════════════════════[0m
+
+[0;34m━━━ Intermediate CA ━━━[0m
+[0;32mStatus: ✅ VALID[0m
+Subject:  /CN=Energy Company Operations Intermediate CA
+Issuer:  /CN=Energy Company Root CA
+Serial: 5B5227F423609F8DB62DC257FE895E618B50E821
+Valid From: Feb 27 09:47:26 2026 GMT
+Valid Until: Feb 26 09:47:56 2031 GMT
+[0;32mDays Remaining: 1819[0m
+
+[0;34m═══════════════════════════════════════════════[0m
+[0;34m  3. ISSUED CERTIFICATES TRACKING[0m
+[0;34m═══════════════════════════════════════════════[0m
+Querying pki_int for issued certificates...
+[0;32mFound 9 issued certificate(s)[0m
+
+
+[0;34m━━━ Certificate Serial: 05:f1:cc:d5:32:2c:e0:ff:7d:07:27:f8:0f:49:08:82:e4:9f:03:32 ━━━[0m
+Status: [1;33m⚠️  EXPIRING SOON[0m
+Subject:  /CN=sm-node02.meter.energy.internal
+Expires: Mar 29 09:57:40 2026 GMT
+Days Remaining: 24
+
+[0;34m━━━ Certificate Serial: 1b:f1:6e:c1:a1:0f:95:8d:c8:ce:eb:26:54:39:fe:ae:c4:7b:70:0a ━━━[0m
+Status: [0;31m❌ EXPIRED[0m
+Subject:  /CN=ismail.zemouri.corp.energy.internal
+Expires: Feb 28 09:57:41 2026 GMT
+Days Remaining: -4
+
+[0;34m━━━ Certificate Serial: 23:37:c6:d1:63:c7:bd:9d:9b:cd:8a:7b:59:59:04:6d:06:06:9a:2b ━━━[0m
+Status: [1;33m⚠️  EXPIRING SOON[0m
+Subject:  /CN=sm-gateway-brussels.meter.energy.internal
+Expires: Mar 29 09:57:40 2026 GMT
+Days Remaining: 24
+
+[0;34m━━━ Certificate Serial: 29:ba:78:4e:18:d3:49:8e:a0:65:4e:d1:a9:92:a9:dc:65:58:66:5f ━━━[0m
+Status: [1;33m⚠️  EXPIRING SOON[0m
+Subject:  /CN=hmi-plant-a.scada.energy.internal
+Expires: Mar 29 09:57:41 2026 GMT
+Days Remaining: 24
+
+[0;34m━━━ Certificate Serial: 3f:99:67:e2:0e:8a:2f:1c:76:0d:06:13:59:38:b3:ed:4d:a4:22:f5 ━━━[0m
+Status: [1;33m⚠️  EXPIRING SOON[0m
+Subject:  /CN=sm-node01.meter.energy.internal
+Expires: Mar 29 09:57:40 2026 GMT
+Days Remaining: 24
+
+[0;34m━━━ Certificate Serial: 41:a2:5b:ec:87:84:2c:a3:26:f1:9d:99:c8:8f:7f:05:34:e4:ef:bd ━━━[0m
+Status: [1;33m⚠️  EXPIRING SOON[0m
+Subject:  /CN=plc-substation-liege.scada.energy.internal
+Expires: Mar 29 09:57:41 2026 GMT
+Days Remaining: 24
+
+[0;34m━━━ Certificate Serial: 50:46:79:e4:51:73:1f:12:a9:fd:80:c7:d7:9c:81:38:35:37:e8:59 ━━━[0m
+Status: [1;33m⚠️  EXPIRING SOON[0m
+Subject:  /CN=subagent-test.meter.energy.internal
+Expires: Mar 29 10:10:47 2026 GMT
+Days Remaining: 24
+
+[0;34m━━━ Certificate Serial: 55:13:56:55:70:15:ca:5f:30:b0:a1:f0:87:1d:11:8b:76:48:68:ab ━━━[0m
+Status: [0;31m❌ EXPIRED[0m
+Subject:  /CN=alice.martin.corp.energy.internal
+Expires: Feb 28 09:57:41 2026 GMT
+Days Remaining: -4
+
+[0;34m━━━ Certificate Serial: 6a:fc:0d:d8:ab:3e:99:94:95:d3:29:ff:6a:19:cd:56:6e:86:07:3f ━━━[0m
+Status: [1;33m⚠️  EXPIRING SOON[0m
+Subject:  /CN=sm-decommissioned-old.meter.energy.internal
+Expires: Mar 29 09:57:41 2026 GMT
+Days Remaining: 24
+
+[0;34m━━━ Certificate Summary ━━━[0m
+[0;32mValid: 0[0m
+[1;33mExpiring Soon (<30 days): 7[0m
+[0;31mExpired: 2[0m
+
+[0;34m═══════════════════════════════════════════════[0m
+[0;34m  4. REVOCATION STATUS (CRL)[0m
+[0;34m═══════════════════════════════════════════════[0m
+Fetching CRL from pki_int...
+CRL Last Update: 
+CRL Next Update: 
+[0;31mRevoked Certificates: 0
+0[0m
+
+[0;34m═══════════════════════════════════════════════[0m
+[0;34m  5. PKI HEALTH METRICS[0m
+[0;34m═══════════════════════════════════════════════[0m
+Checking PKI mount health...
+pki_root: ✅ Healthy
+pki_int: ✅ Healthy
+
+[0;34m═══════════════════════════════════════════════[0m
+[0;34m  6. ACME ACTIVITY[0m
+[0;34m═══════════════════════════════════════════════[0m
+ACME Endpoint: ✅ Active
+
+[0;34m═══════════════════════════════════════════════[0m
+[0;34m  MONITORING SUMMARY[0m
+[0;34m═══════════════════════════════════════════════[0m
+
+✅ Monitoring report generated: ./monitoring_reports/cert_lifecycle_20260305_090001.txt
+📊 Threshold for expiration warning: 30 days
+⏰ Next recommended check: Fri Mar  6 09:00:07 CET 2026

@@ -1,0 +1,14 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: solar-panel-cert
+  namespace: default
+spec:
+  secretName: solar-panel-cert-tls
+  issuerRef:
+    name: openbao-acme-issuer
+    kind: ClusterIssuer
+  commonName: panel-1.solar.energy.internal
+  dnsNames:
+    - panel-1.solar.energy.internal
+    - mqtt.solar.energy.internal

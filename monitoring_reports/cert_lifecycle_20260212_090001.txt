@@ -1,0 +1,66 @@
+=====================================================
+  OpenBao PKI - Certificate Lifecycle Monitor
+  Report Date: Thu Feb 12 09:00:01 CET 2026
+=====================================================
+
+
+[0;34m═══════════════════════════════════════════════[0m
+[0;34m  1. ROOT CA CERTIFICATE STATUS[0m
+[0;34m═══════════════════════════════════════════════[0m
+
+[0;34m━━━ Root CA ━━━[0m
+[0;32mStatus: ✅ VALID[0m
+Subject:  /CN=Energy Company Root CA
+Issuer:  /CN=Energy Company Root CA
+Serial: 5F786EB22DAA218A930D429B562C6FCFFEB9F647
+Valid From: Feb  7 01:02:22 2026 GMT
+Valid Until: Feb  5 01:02:52 2036 GMT
+[0;32mDays Remaining: 3644[0m
+
+[0;34m═══════════════════════════════════════════════[0m
+[0;34m  2. INTERMEDIATE CA CERTIFICATE STATUS[0m
+[0;34m═══════════════════════════════════════════════[0m
+
+[0;34m━━━ Intermediate CA ━━━[0m
+[0;32mStatus: ✅ VALID[0m
+Subject:  /CN=Energy Company K8s Intermediate CA
+Issuer:  /CN=Energy Company Root CA
+Serial: 4A6F8FE59F63E4901ED3EA21527CDB367921668C
+Valid From: Feb  7 01:02:22 2026 GMT
+Valid Until: Feb  6 01:02:52 2031 GMT
+[0;32mDays Remaining: 1819[0m
+
+[0;34m═══════════════════════════════════════════════[0m
+[0;34m  3. ISSUED CERTIFICATES TRACKING[0m
+[0;34m═══════════════════════════════════════════════[0m
+Querying pki_int for issued certificates...
+No certificates found in storage.
+
+[0;34m═══════════════════════════════════════════════[0m
+[0;34m  4. REVOCATION STATUS (CRL)[0m
+[0;34m═══════════════════════════════════════════════[0m
+Fetching CRL from pki_int...
+CRL Last Update: 
+CRL Next Update: 
+[0;31mRevoked Certificates: 0
+0[0m
+
+[0;34m═══════════════════════════════════════════════[0m
+[0;34m  5. PKI HEALTH METRICS[0m
+[0;34m═══════════════════════════════════════════════[0m
+Checking PKI mount health...
+pki_root: ❌ Unhealthy
+pki_int: ❌ Unhealthy
+
+[0;34m═══════════════════════════════════════════════[0m
+[0;34m  6. ACME ACTIVITY[0m
+[0;34m═══════════════════════════════════════════════[0m
+ACME Endpoint: ❌ Inactive
+
+[0;34m═══════════════════════════════════════════════[0m
+[0;34m  MONITORING SUMMARY[0m
+[0;34m═══════════════════════════════════════════════[0m
+
+✅ Monitoring report generated: ./monitoring_reports/cert_lifecycle_20260212_090001.txt
+📊 Threshold for expiration warning: 30 days
+⏰ Next recommended check: Fri Feb 13 09:00:04 CET 2026

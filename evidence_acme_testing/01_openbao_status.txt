@@ -1,0 +1,14 @@
+=== OpenBao Server Status ===
+Key             Value
+---             -----
+Seal Type       shamir
+Initialized     true
+Sealed          false
+Total Shares    1
+Threshold       1
+Version         2.5.0
+Build Date      2026-02-04T16:19:33Z
+Storage Type    inmem
+Cluster Name    vault-cluster-4be76c80
+Cluster ID      7e775247-31f8-9834-26b9-22b3b2e19f18
+HA Enabled      false

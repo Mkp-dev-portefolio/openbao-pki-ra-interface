@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<archimate:model xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:archimate="http://www.archimatetool.com/archimate" name="Key Ceremony (Luna 700)" id="id-ceremony-model" version="5.0.0">
+  <folder name="Business" id="id-folder-business" type="business">
+    <element xsi:type="archimate:BusinessActor" name="Ceremony Admin" id="id-actor-admin"/>
+    <element xsi:type="archimate:BusinessActor" name="HSM Security Officer (SO)" id="id-actor-so"/>
+    <element xsi:type="archimate:BusinessActor" name="Partition Owner (PO)" id="id-actor-po"/>
+    <element xsi:type="archimate:BusinessActor" name="Witnesses (2)" id="id-actor-witness"/>
+    
+    <element xsi:type="archimate:BusinessProcess" name="Phase 0: Remote Connect" id="id-proc-p0"/>
+    <element xsi:type="archimate:BusinessProcess" name="Phase 1: Partition Create" id="id-proc-p1"/>
+    <element xsi:type="archimate:BusinessProcess" name="Phase 2: Partition Init" id="id-proc-p2"/>
+    <element xsi:type="archimate:BusinessProcess" name="Phase 3: Key Gen &amp; CSR" id="id-proc-p3"/>
+  </folder>
+  
+  <folder name="Technology &amp; Physical" id="id-folder-tech" type="technology">
+    <element xsi:type="archimate:Node" name="Admin Laptop" id="id-node-laptop"/>
+    <element xsi:type="archimate:SystemSoftware" name="Pedserver Service" id="id-sw-pedserver"/>
+    <element xsi:type="archimate:Device" name="Remote PED (USB)" id="id-dev-ped"/>
+    <element xsi:type="archimate:Device" name="Thales Luna 700 HSM" id="id-dev-hsm"/>
+  </folder>
+  
+  <folder name="Relations" id="id-folder-rel" type="relations">
+    <!-- Actor Assignments -->
+    <element xsi:type="archimate:AssignmentRelationship" id="id-rel-1" source="id-actor-admin" target="id-proc-p0"/>
+    <element xsi:type="archimate:AssignmentRelationship" id="id-rel-2" source="id-actor-so" target="id-proc-p1"/>
+    <element xsi:type="archimate:AssignmentRelationship" id="id-rel-3" source="id-actor-po" target="id-proc-p2"/>
+    <element xsi:type="archimate:AssignmentRelationship" id="id-rel-4" source="id-actor-po" target="id-proc-p3"/> <!-- CO is usually PO or sub-role, simplified -->
+    <element xsi:type="archimate:AssignmentRelationship" id="id-rel-5" source="id-actor-witness" target="id-proc-p3"/>
+    
+    <!-- Flow Between Phases -->
+    <element xsi:type="archimate:TriggeringRelationship" id="id-rel-flow1" source="id-proc-p0" target="id-proc-p1"/>
+    <element xsi:type="archimate:TriggeringRelationship" id="id-rel-flow2" source="id-proc-p1" target="id-proc-p2"/>
+    <element xsi:type="archimate:TriggeringRelationship" id="id-rel-flow3" source="id-proc-p2" target="id-proc-p3"/>
+    
+    <!-- Tech Layers -->
+    <element xsi:type="archimate:RealizationRelationship" id="id-rel-t1" source="id-node-laptop" target="id-sw-pedserver"/>
+    <element xsi:type="archimate:AssignmentRelationship" id="id-rel-t2" source="id-node-laptop" target="id-dev-ped"/> <!-- Connected to -->
+    <element xsi:type="archimate:FlowRelationship" id="id-rel-t3" source="id-sw-pedserver" target="id-dev-hsm"/> <!-- Network Flow -->
+    
+    <!-- Process uses Tech -->
+    <element xsi:type="archimate:ServingRelationship" id="id-rel-use1" source="id-sw-pedserver" target="id-proc-p0"/>
+    <element xsi:type="archimate:AccessRelationship" id="id-rel-use2" source="id-proc-p3" target="id-dev-hsm"/>
+  </folder>
+
+  <folder name="Views" id="id-folder-views" type="diagrams">
+    <element xsi:type="archimate:ArchimateDiagramModel" name="Ceremony Workflow (Remote PED)" id="id-view-ceremony">
+       <!-- Tech Stack (Bottom) -->
+      <child xsi:type="archimate:DiagramObject" id="id-do-laptop" archimateElement="id-node-laptop">
+        <bounds x="50" y="300" width="120" height="55"/>
+         <sourceConnection xsi:type="archimate:Connection" id="id-conn-t1" source="id-do-laptop" target="id-do-pedserver" archimateRelationship="id-rel-t1"/>
+      </child>
+      <child xsi:type="archimate:DiagramObject" id="id-do-pedserver" targetConnections="id-conn-t1" archimateElement="id-sw-pedserver">
+        <bounds x="50" y="220" width="120" height="55"/>
+        <sourceConnection xsi:type="archimate:Connection" id="id-conn-t3" source="id-do-pedserver" target="id-do-hsm" archimateRelationship="id-rel-t3"/>
+      </child>
+      <child xsi:type="archimate:DiagramObject" id="id-do-ped" archimateElement="id-dev-ped">
+        <bounds x="200" y="300" width="120" height="55"/>
+      </child>
+      <child xsi:type="archimate:DiagramObject" id="id-do-hsm" targetConnections="id-conn-t3" archimateElement="id-dev-hsm">
+        <bounds x="400" y="220" width="120" height="55"/>
+      </child>
+
+      <!-- Processes (Middle) -->
+      <child xsi:type="archimate:DiagramObject" id="id-do-p0" archimateElement="id-proc-p0">
+        <bounds x="50" y="120" width="140" height="55"/>
+        <sourceConnection xsi:type="archimate:Connection" id="id-conn-f1" source="id-do-p0" target="id-do-p1" archimateRelationship="id-rel-flow1"/>
+      </child>
+      <child xsi:type="archimate:DiagramObject" id="id-do-p1" targetConnections="id-conn-f1" archimateElement="id-proc-p1">
+        <bounds x="210" y="120" width="140" height="55"/>
+        <sourceConnection xsi:type="archimate:Connection" id="id-conn-f2" source="id-do-p1" target="id-do-p2" archimateRelationship="id-rel-flow2"/>
+      </child>
+      <child xsi:type="archimate:DiagramObject" id="id-do-p2" targetConnections="id-conn-f2" archimateElement="id-proc-p2">
+        <bounds x="370" y="120" width="140" height="55"/>
+        <sourceConnection xsi:type="archimate:Connection" id="id-conn-f3" source="id-do-p2" target="id-do-p3" archimateRelationship="id-rel-flow3"/>
+      </child>
+      <child xsi:type="archimate:DiagramObject" id="id-do-p3" targetConnections="id-conn-f3" archimateElement="id-proc-p3">
+        <bounds x="530" y="120" width="140" height="55"/>
+      </child>
+
+      <!-- Actors (Top) -->
+      <child xsi:type="archimate:DiagramObject" id="id-do-admin" archimateElement="id-actor-admin">
+        <bounds x="50" y="40" width="120" height="55"/>
+        <sourceConnection xsi:type="archimate:Connection" id="id-conn-a1" source="id-do-admin" target="id-do-p0" archimateRelationship="id-rel-1"/>
+      </child>
+      <child xsi:type="archimate:DiagramObject" id="id-do-so" archimateElement="id-actor-so">
+        <bounds x="210" y="40" width="120" height="55"/>
+         <sourceConnection xsi:type="archimate:Connection" id="id-conn-a2" source="id-do-so" target="id-do-p1" archimateRelationship="id-rel-2"/>
+      </child>
+      <child xsi:type="archimate:DiagramObject" id="id-do-po" archimateElement="id-actor-po">
+        <bounds x="370" y="40" width="120" height="55"/>
+         <sourceConnection xsi:type="archimate:Connection" id="id-conn-a3" source="id-do-po" target="id-do-p2" archimateRelationship="id-rel-3"/>
+         <sourceConnection xsi:type="archimate:Connection" id="id-conn-a4" source="id-do-po" target="id-do-p3" archimateRelationship="id-rel-4"/>
+      </child>
+      <child xsi:type="archimate:DiagramObject" id="id-do-wit" archimateElement="id-actor-witness">
+        <bounds x="530" y="40" width="120" height="55"/>
+         <sourceConnection xsi:type="archimate:Connection" id="id-conn-a5" source="id-do-wit" target="id-do-p3" archimateRelationship="id-rel-5"/>
+      </child>
+    </element>
+  </folder>
+</archimate:model>

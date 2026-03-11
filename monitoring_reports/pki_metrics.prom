@@ -1,0 +1,25 @@
+# HELP openbao_pki_cert_valid_count Number of valid certificates
+# TYPE openbao_pki_cert_valid_count gauge
+openbao_pki_cert_valid_count{mount="pki_int"} 0
+
+# HELP openbao_pki_cert_expiring_count Number of certificates expiring soon
+# TYPE openbao_pki_cert_expiring_count gauge
+openbao_pki_cert_expiring_count{mount="pki_int",threshold_days="30"} 7
+
+# HELP openbao_pki_cert_expired_count Number of expired certificates
+# TYPE openbao_pki_cert_expired_count gauge
+openbao_pki_cert_expired_count{mount="pki_int"} 2
+
+# HELP openbao_pki_cert_revoked_count Number of revoked certificates
+# TYPE openbao_pki_cert_revoked_count gauge
+openbao_pki_cert_revoked_count{mount="pki_int"} 0
+0
+
+# HELP openbao_pki_mount_health PKI mount health status (1=healthy, 0=unhealthy)
+# TYPE openbao_pki_mount_health gauge
+openbao_pki_mount_health{mount="pki_root"} 1
+openbao_pki_mount_health{mount="pki_int"} 1
+
+# HELP openbao_pki_acme_endpoint_health ACME endpoint health (1=active, 0=inactive)
+# TYPE openbao_pki_acme_endpoint_health gauge
+openbao_pki_acme_endpoint_health{mount="pki_int"} 1
