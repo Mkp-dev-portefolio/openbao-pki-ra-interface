@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RA Console — OpenBao PKI</title>
+  <meta name="description" content="Registration Authority interface for OpenBao PKI — certificate lifecycle, discovery, dual approval, identity management">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<!-- ─── Toast Container ──────────────────────────────── -->
+<div id="toast-container"></div>
+
+<!-- ─── App Shell ────────────────────────────────────── -->
+<div class="app-shell">
+
+  <!-- ══ Sidebar ════════════════════════════════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="logo-icon">🔐</div>
+        <div class="logo-text">
+          <strong>RA Console</strong>
+          <span>OpenBao PKI</span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">Overview</span>
+      <div class="nav-item active" data-view="dashboard">
+        <span class="nav-icon">📊</span> Dashboard
+      </div>
+
+      <span class="nav-section-label">Certificates</span>
+      <div class="nav-item" data-view="discovery">
+        <span class="nav-icon">🔍</span> Discovery
+      </div>
+      <div class="nav-item" data-view="lifecycle">
+        <span class="nav-icon">♻️</span> Lifecycle
+      </div>
+      <div class="nav-item" data-view="revocation">
+        <span class="nav-icon">⛔</span> Revocation
+      </div>
+
+      <span class="nav-section-label">RA Operations</span>
+      <div class="nav-item" data-view="approvals">
+        <span class="nav-icon">✅</span> Dual Approval
+        <span class="nav-badge approval-badge" style="display:none">0</span>
+      </div>
+      <div class="nav-item" data-view="identity">
+        <span class="nav-icon">👤</span> Identity &amp; Users
+      </div>
+      <div class="nav-item" data-view="roles">
+        <span class="nav-icon">🔑</span> Roles &amp; Policies
+      </div>
+
+      <span class="nav-section-label">Compliance</span>
+      <div class="nav-item" data-view="audit">
+        <span class="nav-icon">📋</span> Audit Trail
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div style="padding:6px 12px 8px;font-size:11px;color:var(--text-muted)">
+        Operator: <strong id="current-user-display">ra-operator</strong>
+      </div>
+      <div class="connection-status" onclick="openSettings()">
+        <div id="conn-dot" class="status-dot disconnected"></div>
+        <div>
+          <div id="conn-text" class="status-text">Not connected</div>
+          <div id="conn-addr" style="font-size:10px;color:var(--text-muted)"></div>
+        </div>
+        <span style="font-size:14px;color:var(--text-muted)">⚙</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══ Main ═══════════════════════════════════════════ -->
+  <div class="main">
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-title-group">
+        <div class="topbar-title" id="topbar-title">Dashboard</div>
+        <div class="topbar-subtitle" id="topbar-sub">PKI health &amp; overview</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn-icon" onclick="checkConnection()" title="Refresh">↻</button>
+        <button class="btn-icon" onclick="openSettings()" title="Settings">⚙</button>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- ══════════════════════════════════════════════════
+           VIEW: DASHBOARD
+           ══════════════════════════════════════════════════ -->
+      <div id="view-dashboard" class="view active">
+        <div class="section-header">
+          <div class="section-title">PKI Registration Authority</div>
+          <div class="section-desc">Energy Company · OpenBao PKI Engine · <span style="color:var(--accent-cyan)">pki_root</span> + <span style="color:var(--accent-indigo)">pki_int</span></div>
+        </div>
+
+        <div class="stats-grid" id="dash-stats">
+          <!-- Populated by JS -->
+          <div class="skeleton" style="height:100px"></div>
+          <div class="skeleton" style="height:100px"></div>
+          <div class="skeleton" style="height:100px"></div>
+          <div class="skeleton" style="height:100px"></div>
+          <div class="skeleton" style="height:100px"></div>
+          <div class="skeleton" style="height:100px"></div>
+        </div>
+
+        <!-- CA Status -->
+        <div id="dash-ca" style="margin-bottom:16px">
+          <div class="skeleton" style="height:150px"></div>
+        </div>
+
+        <div class="grid-2">
+          <!-- Expiry Alerts -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">⚠ Expiry Alerts</div>
+              <button class="btn btn-secondary btn-sm" onclick="navigate('discovery')">View All</button>
+            </div>
+            <div class="table-wrap" id="dash-alerts">
+              <div class="skeleton" style="height:60px;margin:16px"></div>
+            </div>
+          </div>
+
+          <!-- Recent Audit -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">📋 Recent Activity</div>
+              <button class="btn btn-secondary btn-sm" onclick="navigate('audit')">Full Log</button>
+            </div>
+            <div class="card-body" id="dash-audit">
+              <div class="skeleton" style="height:180px"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════
+           VIEW: DISCOVERY
+           ══════════════════════════════════════════════════ -->
+      <div id="view-discovery" class="view">
+        <div class="section-header">
+          <div class="section-title">Certificate Discovery</div>
+          <div class="section-desc">All certificates issued by pki_int</div>
+        </div>
+
+        <div class="filter-row">
+          <div class="search-bar">
+            <span>🔍</span>
+            <input type="text" id="disc-search" placeholder="Search by CN or serial…">
+          </div>
+          <select id="disc-status">
+            <option value="">All statuses</option>
+            <option value="active">Active</option>
+            <option value="expiring">Expiring &lt; 30d</option>
+            <option value="expired">Expired</option>
+            <option value="revoked">Revoked</option>
+          </select>
+          <button class="btn btn-secondary btn-sm" onclick="Discovery.load()">↻ Refresh</button>
+          <button class="btn btn-primary" onclick="navigate('lifecycle')">+ Issue New</button>
+        </div>
+
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Serial Number</th>
+                  <th>Common Name</th>
+                  <th>Role / Org</th>
+                  <th>Expiry</th>
+                  <th>Expires On</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="disc-table-body">
+                <tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════
+           VIEW: LIFECYCLE
+           ══════════════════════════════════════════════════ -->
+      <div id="view-lifecycle" class="view">
+        <div class="section-header">
+          <div class="section-title">Certificate Lifecycle</div>
+          <div class="section-desc">Issue, inspect, renew and revoke certificates</div>
+        </div>
+
+        <div class="tabs">
+          <div class="tab issue-tab active" data-panel="issue" id="tab-issue" onclick="Lifecycle.switchTab('issue')">📜 Issue Certificate</div>
+          <div class="tab issue-tab" data-panel="issued" id="tab-issued" onclick="Lifecycle.switchTab('issued')">📥 Last Issued</div>
+          <div class="tab issue-tab" data-panel="revoke" id="tab-revoke" onclick="Lifecycle.switchTab('revoke');Lifecycle.revokePrompt()">⛔ Revoke</div>
+        </div>
+
+        <!-- Issue Panel -->
+        <div data-issue-panel="issue">
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header"><div class="card-title">📜 New Certificate Request</div></div>
+              <div class="card-body">
+                <div class="form-group">
+                  <label>PKI Role</label>
+                  <select id="issue-role"></select>
+                </div>
+                <div class="form-group">
+                  <label>Common Name (CN)</label>
+                  <input type="text" id="issue-cn" placeholder="e.g. device01.meter.energy.internal">
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>TTL</label>
+                    <input type="text" id="issue-ttl" value="720h" placeholder="720h">
+                  </div>
+                  <div class="form-group">
+                    <label>Alt Names (SANs)</label>
+                    <input type="text" id="issue-altnames" placeholder="comma-separated">
+                  </div>
+                </div>
+                <button class="btn btn-primary" style="width:100%" id="btn-issue" onclick="Lifecycle.issue()">
+                  🔐 Issue Certificate
+                </button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header"><div class="card-title">💡 Role Templates</div></div>
+              <div class="card-body">
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Select a role to auto-fill recommended settings</div>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <div class="card" style="padding:12px;cursor:pointer;border-color:var(--border-active)" onclick="el('issue-role').value='smart-meter';Lifecycle.applyTemplate('smart-meter')">
+                    <div style="font-weight:700;font-size:13px">📡 smart-meter</div>
+                    <div style="font-size:11px;color:var(--text-muted);margin-top:2px">*.meter.energy.internal · TTL 720h · Client+Server</div>
+                  </div>
+                  <div class="card" style="padding:12px;cursor:pointer" onclick="el('issue-role').value='scada-system';Lifecycle.applyTemplate('scada-system')">
+                    <div style="font-weight:700;font-size:13px">🏭 scada-system</div>
+                    <div style="font-size:11px;color:var(--text-muted);margin-top:2px">*.scada.energy.internal · TTL 720h · Client+Server</div>
+                  </div>
+                  <div class="card" style="padding:12px;cursor:pointer" onclick="el('issue-role').value='corporate-user';Lifecycle.applyTemplate('corporate-user')">
+                    <div style="font-weight:700;font-size:13px">👤 corporate-user</div>
+                    <div style="font-size:11px;color:var(--text-muted);margin-top:2px">*.corp.energy.internal · TTL 24h · Client only</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Issued Panel -->
+        <div data-issue-panel="issued" style="display:none">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">📥 Last Issued Certificate</div>
+              <button class="copy-btn" onclick="copyText(el('issued-cert-pem').textContent)">⎘ Copy PEM</button>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label>Serial Number</label>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent-cyan)" id="issued-serial">— issue a certificate first</div>
+              </div>
+              <div class="form-group">
+                <label>Certificate PEM</label>
+                <div class="code-block" id="issued-cert-pem">No certificate issued yet in this session.</div>
+              </div>
+              <div class="form-group">
+                <label>Private Key PEM <span style="color:var(--danger);font-size:11px">⚠ Store securely — not retrievable again</span></label>
+                <div class="code-block" id="issued-key-pem"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Revoke Panel (triggers modal) -->
+        <div data-issue-panel="revoke" style="display:none"></div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════
+           VIEW: APPROVALS
+           ══════════════════════════════════════════════════ -->
+      <div id="view-approvals" class="view">
+        <div class="section-header">
+          <div class="section-title">Dual Approval Queue</div>
+          <div class="section-desc">Certificate requests requiring two-operator sign-off</div>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;font-size:13px;color:var(--text-secondary);max-width:500px">
+            🔐 <strong>4-Eyes Principle:</strong> A request submitted by Operator A <em>must</em> be approved by Operator B. Self-approval is blocked. Switch the operator name in Settings to simulate the second approver.
+          </div>
+          <button class="btn btn-primary" onclick="showModal('modal-new-request')">+ New Request</button>
+        </div>
+
+        <div class="scroll-list" id="approval-list">
+          <div class="loading"><div class="spinner"></div> Loading…</div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════
+           VIEW: IDENTITY
+           ══════════════════════════════════════════════════ -->
+      <div id="view-identity" class="view">
+        <div class="section-header">
+          <div class="section-title">Identity &amp; Users</div>
+          <div class="section-desc">User onboarding, policy binding, and identity verification</div>
+        </div>
+
+        <div class="grid-2" style="margin-bottom:16px">
+          <div class="card" style="border-color:var(--border-active)">
+            <div class="card-header"><div class="card-title">🛡 Identity Verification Checklist</div></div>
+            <div class="card-body" style="font-size:13px">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <label style="text-transform:none;display:flex;align-items:center;gap:8px;font-size:13px">
+                  <input type="checkbox"> Proof of employment / org membership verified
+                </label>
+                <label style="text-transform:none;display:flex;align-items:center;gap:8px;font-size:13px">
+                  <input type="checkbox"> Device/system owner documented (for machine certs)
+                </label>
+                <label style="text-transform:none;display:flex;align-items:center;gap:8px;font-size:13px">
+                  <input type="checkbox"> Request purpose documented
+                </label>
+                <label style="text-transform:none;display:flex;align-items:center;gap:8px;font-size:13px">
+                  <input type="checkbox"> Manager / CISO approval obtained
+                </label>
+                <label style="text-transform:none;display:flex;align-items:center;gap:8px;font-size:13px">
+                  <input type="checkbox"> Policy binding reviewed (role scope correct)
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Auth Methods Active</div>
+            </div>
+            <div class="card-body" style="font-size:13px;display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span>🔑 userpass</span><span class="badge badge-ok">Enabled</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span>🤖 ACME (mTLS)</span><span class="badge badge-ok">Active</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span>🏷 token</span><span class="badge badge-ok">Enabled</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span>🪪 LDAP / OIDC</span><span class="badge badge-muted">Not configured</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">👥 Registered Users (userpass)</div>
+            <button class="btn btn-primary btn-sm" onclick="showModal('modal-new-user')">+ Add User</button>
+          </div>
+          <div id="identity-list" class="scroll-list">
+            <div class="loading"><div class="spinner"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════
+           VIEW: ROLES
+           ══════════════════════════════════════════════════ -->
+      <div id="view-roles" class="view">
+        <div class="section-header">
+          <div class="section-title">Roles &amp; Policies</div>
+          <div class="section-desc">Manage PKI issuance roles and access control policies</div>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;margin-bottom:16px;gap:8px">
+          <button class="btn btn-secondary" onclick="Roles.load()">↻ Refresh</button>
+          <button class="btn btn-primary" onclick="Roles.newRole()">+ New Role</button>
+        </div>
+
+        <div id="roles-list">
+          <div class="loading"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════
+           VIEW: REVOCATION
+           ══════════════════════════════════════════════════ -->
+      <div id="view-revocation" class="view">
+        <div class="section-header">
+          <div class="section-title">Revocation Monitor</div>
+          <div class="section-desc">CRL status, OCSP endpoint health, and revoked certificate inventory</div>
+        </div>
+
+        <div class="stats-grid" id="revoc-status">
+          <div class="skeleton" style="height:100px"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">⛔ Revoked Certificates</div>
+            <button class="btn btn-secondary btn-sm" onclick="Revocation.load()">↻ Refresh</button>
+          </div>
+          <div id="revoc-list" class="card-body">
+            <div class="loading"><div class="spinner"></div></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <div class="card-header"><div class="card-title">📡 Distribution Points</div></div>
+          <div class="card-body" style="font-size:13px;display:flex;flex-direction:column;gap:10px">
+            <div>
+              <label>CRL URL</label>
+              <div class="code-block" style="margin-top:6px">http://127.0.0.1:8200/v1/pki_int/crl</div>
+            </div>
+            <div>
+              <label>OCSP URL</label>
+              <div class="code-block" style="margin-top:6px">http://127.0.0.1:8200/v1/pki_int/ocsp</div>
+            </div>
+            <div>
+              <label>CA Issuing URL</label>
+              <div class="code-block" style="margin-top:6px">http://127.0.0.1:8200/v1/pki_int/ca</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════
+           VIEW: AUDIT
+           ══════════════════════════════════════════════════ -->
+      <div id="view-audit" class="view">
+        <div class="section-header">
+          <div class="section-title">Audit Trail</div>
+          <div class="section-desc">RFC 3647 / eIDAS compliance — all RA events recorded with operator identity</div>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:16px">
+          <button class="btn btn-secondary" onclick="Audit.export()">⬇ Export CSV</button>
+          <button class="btn btn-danger btn-sm" onclick="Audit.clear()">🗑 Clear</button>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <ul class="timeline" id="audit-timeline">
+              <div class="loading"><div class="spinner"></div></div>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app-shell -->
+
+
+<!-- ═══════════════════════════════════════════════════════
+     MODALS
+     ═══════════════════════════════════════════════════════ -->
+
+<!-- Settings Modal -->
+<div id="modal-settings" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">⚙ Connection Settings</h2>
+      <button class="modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>OpenBao Address</label>
+        <input type="text" id="set-addr" placeholder="http://127.0.0.1:8200">
+      </div>
+      <div class="form-group">
+        <label>Token</label>
+        <input type="password" id="set-token" placeholder="root or your ra-operator token">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>PKI Mount (Intermediate)</label>
+          <input type="text" id="set-mount" placeholder="pki_int">
+        </div>
+        <div class="form-group">
+          <label>Current Operator Name</label>
+          <input type="text" id="set-user" placeholder="ra-operator">
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);background:var(--bg-surface);border-radius:var(--radius-sm);padding:10px">
+        💡 To simulate dual-approval: submit a request as <strong>ra-operator</strong>, then change the operator name here to <strong>ra-validator</strong> and approve. Self-approval is blocked.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" data-close-modal>Cancel</button>
+      <button class="btn btn-primary" onclick="saveSettings()">💾 Save &amp; Reconnect</button>
+    </div>
+  </div>
+</div>
+
+<!-- Inspect Certificate Modal -->
+<div id="modal-inspect" class="modal-overlay">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div>
+        <h2 class="modal-title">📜 Certificate Details</h2>
+        <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text-muted);margin-top:2px" id="inspect-serial"></div>
+      </div>
+      <button class="modal-close">✕</button>
+    </div>
+    <div class="modal-body" id="inspect-body">
+      <div class="loading"><div class="spinner"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Revoke Modal -->
+<div id="modal-revoke" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">⛔ Revoke Certificate</h2>
+      <button class="modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:hsla(5,80%,58%,0.1);border:1px solid hsla(5,80%,58%,0.3);border-radius:var(--radius-sm);padding:12px;margin-bottom:16px;font-size:13px;color:var(--danger)">
+        ⚠ Revocation is <strong>irreversible</strong>. The certificate will be added to the CRL immediately.
+      </div>
+      <div class="form-group">
+        <label>Serial Number</label>
+        <input type="text" id="revoke-serial" placeholder="4a:fc:98:16:75:89…">
+      </div>
+      <div class="form-group">
+        <label>Revocation Reason</label>
+        <select id="revoke-reason">
+          <option value="unspecified">Unspecified</option>
+          <option value="keyCompromise">Key Compromise</option>
+          <option value="caCompromise">CA Compromise</option>
+          <option value="affiliationChanged">Affiliation Changed</option>
+          <option value="superseded">Superseded</option>
+          <option value="cessationOfOperation">Cessation of Operation</option>
+          <option value="privilegeWithdrawn">Privilege Withdrawn</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" data-close-modal>Cancel</button>
+      <button class="btn btn-danger" id="btn-revoke-confirm" onclick="Lifecycle.revoke()">⛔ Confirm Revocation</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Approval Request Modal -->
+<div id="modal-new-request" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">🔐 Submit Certificate Request</h2>
+      <button class="modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>PKI Role</label>
+        <select id="apr-role"></select>
+      </div>
+      <div class="form-group">
+        <label>Common Name (CN)</label>
+        <input type="text" id="apr-cn" placeholder="e.g. device42.meter.energy.internal">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>TTL</label>
+          <input type="text" id="apr-ttl" value="720h">
+        </div>
+        <div class="form-group">
+          <label>Alt Names</label>
+          <input type="text" id="apr-altnames" placeholder="comma-separated">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Business Justification</label>
+        <textarea id="apr-rationale" placeholder="Why is this certificate needed? Who authorized it?"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" data-close-modal>Cancel</button>
+      <button class="btn btn-primary" onclick="Approvals.submit()">📤 Submit for Approval</button>
+    </div>
+  </div>
+</div>
+
+<!-- New User Modal -->
+<div id="modal-new-user" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">👤 Add User</h2>
+      <button class="modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="new-user-name" placeholder="e.g. team-blue-lead">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="new-user-password" placeholder="Minimum 12 characters">
+      </div>
+      <div class="form-group">
+        <label>Policies (Ctrl+click to multi-select)</label>
+        <select id="new-user-policies" multiple style="height:120px"></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" data-close-modal>Cancel</button>
+      <button class="btn btn-primary" onclick="Identity.createUser()">✓ Create User</button>
+    </div>
+  </div>
+</div>
+
+<!-- View User Modal -->
+<div id="modal-view-user" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">👤 User: <span id="view-user-title"></span></h2>
+      <button class="modal-close">✕</button>
+    </div>
+    <div class="modal-body" id="view-user-body">
+      <div class="loading"><div class="spinner"></div></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" data-close-modal>Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Role Editor Modal -->
+<div id="modal-role" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="role-modal-title">Role</h2>
+      <button class="modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Role Name</label>
+        <input type="text" id="role-name-input" placeholder="e.g. smart-meter">
+      </div>
+      <div class="form-group">
+        <label>Allowed Domains (comma-separated)</label>
+        <input type="text" id="role-domains" placeholder="*.meter.energy.internal">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Max TTL</label>
+          <input type="text" id="role-max-ttl" placeholder="720h">
+        </div>
+        <div class="form-group">
+          <label>Key Bits</label>
+          <select id="role-key-bits">
+            <option value="2048">RSA 2048</option>
+            <option value="3072">RSA 3072</option>
+            <option value="4096">RSA 4096</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;gap:20px;font-size:13px">
+        <label style="text-transform:none;display:flex;align-items:center;gap:6px">
+          <input type="checkbox" id="role-client"> Client Auth
+        </label>
+        <label style="text-transform:none;display:flex;align-items:center;gap:6px">
+          <input type="checkbox" id="role-server"> Server Auth
+        </label>
+        <label style="text-transform:none;display:flex;align-items:center;gap:6px">
+          <input type="checkbox" id="role-subdomains"> Allow Subdomains
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" data-close-modal>Cancel</button>
+      <button class="btn btn-primary" onclick="Roles.saveRole()">💾 Save Role</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

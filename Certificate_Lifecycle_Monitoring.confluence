@@ -1,0 +1,519 @@
+h1. Certificate Lifecycle Monitoring - OpenBao PKI
+
+{panel:title=Monitoring Overview|borderStyle=solid|borderColor=#1976d2|titleBGColor=#e3f2fd|bgColor=#f1f8f4}
+*Purpose:* Track certificate issuance, expiration, revocation, and PKI health
+*Approach:* Multi-layered monitoring using scripts, audit logs, Prometheus, and Grafana
+*Update Frequency:* Real-time (Prometheus) + Daily Reports (Scripts)
+{panel}
+
+----
+
+h2. Monitoring Architecture
+
+{code:title=Monitoring Stack}
+┌─────────────────────────────────────────────────────────┐
+│                  Monitoring Layers                      │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  Layer 1: OpenBao Native Audit Logs                    │
+│  ├─ All PKI operations logged                          │
+│  ├─ Certificate issuance events                        │
+│  └─ Revocation events                                  │
+│                                                         │
+│  Layer 2: Scheduled Monitoring Scripts                 │
+│  ├─ Certificate expiration checker                     │
+│  ├─ CRL (Certificate Revocation List) analysis         │
+│  └─ PKI health validator                               │
+│                                                         │
+│  Layer 3: Prometheus Metrics Exporter                  │
+│  ├─ Real-time certificate counts                       │
+│  ├─ Expiration alerts                                  │
+│  └─ PKI mount health status                            │
+│                                                         │
+│  Layer 4: Grafana Dashboards                           │
+│  ├─ Visual certificate lifecycle tracking              │
+│  ├─ Expiration timeline charts                         │
+│  └─ Alert notifications (Slack/Email)                  │
+│                                                         │
+│  Layer 5: Cert-Manager Monitoring (Kubernetes)         │
+│  ├─ Certificate resource status                        │
+│  ├─ ACME challenge tracking                            │
+│  └─ Automatic renewal metrics                          │
+└─────────────────────────────────────────────────────────┘
+{code}
+
+----
+
+h2. Layer 1: OpenBao Audit Logging
+
+h3. Enable Audit Logging
+
+{code:language=bash|title=Enable File-Based Audit Log}
+# Enable audit device
+bao audit enable file file_path=/var/log/openbao/audit.log
+
+# Or for Kubernetes deployment, use stdout
+kubectl exec -n openbao openbao-0 -- \
+  bao audit enable file file_path=stdout
+{code}
+
+h3. Audit Log Structure
+
+{code:language=json|title=Sample PKI Certificate Issuance Event}
+{
+  "time": "2026-02-07T01:52:00Z",
+  "type": "response",
+  "auth": {
+    "token_type": "service",
+    "policies": ["default", "pki-admin"]
+  },
+  "request": {
+    "operation": "update",
+    "path": "pki_int/issue/acme-default",
+    "data": {
+      "common_name": "testserver.solar.energy.internal",
+      "ttl": "720h"
+    }
+  },
+  "response": {
+    "data": {
+      "certificate": "-----BEGIN CERTIFICATE-----...",
+      "serial_number": "4e:4c:f1:78:45:74:74:ce"
+    }
+  }
+}
+{code}
+
+h3. Query Audit Logs for PKI Events
+
+{code:language=bash|title=Extract Certificate Issuance Events}
+# Filter PKI operations from audit log
+cat /var/log/openbao/audit.log | \
+  jq 'select(.request.path | startswith("pki_int/")) | 
+      {time, operation: .request.operation, path: .request.path, 
+       common_name: .request.data.common_name}'
+
+# Count certificate issuances per day
+cat /var/log/openbao/audit.log | \
+  jq -r 'select(.request.path | contains("/issue/")) | .time' | \
+  cut -d'T' -f1 | sort | uniq -c
+{code}
+
+----
+
+h2. Layer 2: Scheduled Monitoring Script
+
+h3. Monitoring Script Features
+
+|| Feature || Description || Output ||
+| Certificate Expiration | Checks days remaining for all certs | Color-coded status (Valid/Expiring/Expired) |
+| CRL Analysis | Tracks revoked certificates | Revocation count and CRL freshness |
+| PKI Health Check | Validates mount accessibility | Mount status (Healthy/Unhealthy) |
+| ACME Endpoint Status | Verifies ACME directory availability | Active/Inactive status |
+| Prometheus Export | Generates metrics in Prometheus format | {{pki_metrics.prom}} |
+
+h3. Execution and Scheduling
+
+{code:language=bash|title=Run Monitoring Script}
+# Manual execution
+./monitor_certificate_lifecycle.sh
+
+# Schedule with cron (daily at 9 AM)
+crontab -e
+# Add line:
+0 9 * * * /path/to/monitor_certificate_lifecycle.sh
+
+# Kubernetes CronJob example
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: pki-lifecycle-monitor
+spec:
+  schedule: "0 9 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: monitor
+            image: openbao:latest
+            command: ["/scripts/monitor_certificate_lifecycle.sh"]
+{code}
+
+h3. Sample Output
+
+{code:title=Monitoring Report Extract}
+=====================================================
+  OpenBao PKI - Certificate Lifecycle Monitor
+  Report Date: Sat Feb  7 01:52:07 CET 2026
+=====================================================
+
+═══════════════════════════════════════════════
+  1. ROOT CA CERTIFICATE STATUS
+═══════════════════════════════════════════════
+
+━━━ Root CA ━━━
+Status: ✅ VALID
+Subject: CN=Energy Company Root CA
+Valid Until: Feb  5 00:40:19 2036 GMT
+Days Remaining: 3649
+
+═══════════════════════════════════════════════
+  2. INTERMEDIATE CA CERTIFICATE STATUS
+═══════════════════════════════════════════════
+
+━━━ Intermediate CA ━━━
+Status: ✅ VALID
+Subject: CN=Energy Company K8s Intermediate CA
+Valid Until: Feb  6 00:40:20 2031 GMT
+Days Remaining: 1824
+
+PKI Health: ✅ All mounts healthy
+ACME Endpoint: ✅ Active
+{code}
+
+----
+
+h2. Layer 3: Prometheus Integration
+
+h3. Metrics Exported
+
+|| Metric Name || Type || Description || Labels ||
+| {{openbao_pki_cert_valid_count}} | Gauge | Number of valid certificates | mount |
+| {{openbao_pki_cert_expiring_count}} | Gauge | Certificates expiring within threshold | mount, threshold_days |
+| {{openbao_pki_cert_expired_count}} | Gauge | Number of expired certificates | mount |
+| {{openbao_pki_cert_revoked_count}} | Gauge | Number of revoked certificates | mount |
+| {{openbao_pki_mount_health}} | Gauge | PKI mount health (1=healthy, 0=unhealthy) | mount |
+| {{openbao_pki_acme_endpoint_health}} | Gauge | ACME endpoint status (1=active, 0=inactive) | mount |
+
+h3. Prometheus Configuration
+
+{code:language=yaml|title=prometheus.yml - Scrape Configuration}
+global:
+  scrape_interval: 60s
+  evaluation_interval: 60s
+
+scrape_configs:
+  # OpenBao PKI Metrics (via monitoring script output)
+  - job_name: 'openbao-pki'
+    static_configs:
+      - targets: ['localhost:9100']
+    file_sd_configs:
+      - files:
+        - '/path/to/monitoring_reports/pki_metrics.prom'
+        refresh_interval: 60s
+
+  # Cert-Manager Metrics (if deployed)
+  - job_name: 'cert-manager'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - cert-manager
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: cert-manager
+{code}
+
+h3. Alerting Rules
+
+{code:language=yaml|title=pki_alerts.yml}
+groups:
+  - name: pki_certificate_lifecycle
+    interval: 5m
+    rules:
+      # Alert if certificates expiring within 30 days
+      - alert: CertificateExpiringSoon
+        expr: openbao_pki_cert_expiring_count > 0
+        for: 1h
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Certificates expiring soon in {{ $labels.mount }}"
+          description: "{{ $value }} certificate(s) expiring within threshold"
+
+      # Alert if certificates have expired
+      - alert: CertificateExpired
+        expr: openbao_pki_cert_expired_count > 0
+        for: 5m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Expired certificates detected in {{ $labels.mount }}"
+          description: "{{ $value }} certificate(s) have expired"
+
+      # Alert if PKI mount is unhealthy
+      - alert: PKIMountUnhealthy
+        expr: openbao_pki_mount_health == 0
+        for: 5m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "PKI mount {{ $labels.mount }} is unhealthy"
+          description: "Cannot access PKI mount - investigate immediately"
+
+      # Alert if ACME endpoint is down
+      - alert: ACMEEndpointDown
+        expr: openbao_pki_acme_endpoint_health == 0
+        for: 2m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "ACME endpoint unavailable for {{ $labels.mount }}"
+          description: "Automated certificate issuance may be impacted"
+
+      # Alert on high revocation rate
+      - alert: HighCertificateRevocationRate
+        expr: rate(openbao_pki_cert_revoked_count[1h]) > 5
+        for: 10m
+        labels:
+          severity: warning
+          team: security
+        annotations:
+          summary: "High certificate revocation rate detected"
+          description: "Investigate potential security incident"
+{code}
+
+----
+
+h2. Layer 4: Grafana Dashboards
+
+h3. Dashboard Panels
+
+{panel:title=Certificate Lifecycle Dashboard|bgColor=#f5f5f5}
+*Panel 1: Certificate Count Overview*
+- Total certificates issued (all-time)
+- Valid certificates (current)
+- Expiring soon (< 30 days)
+- Expired certificates
+
+*Panel 2: Expiration Timeline*
+- Bar chart showing certificate expiration distribution
+- X-axis: Days until expiration (buckets: 0-7, 8-30, 31-90, 90+)
+- Y-axis: Certificate count
+
+*Panel 3: PKI Health Status*
+- Single stat panels for each PKI mount
+- Green/Red status indicators
+- ACME endpoint availability
+
+*Panel 4: Revocation Tracking*
+- Time series of revoked certificates
+- Spike detection for security incidents
+
+*Panel 5: ACME Activity*
+- Certificate issuance rate (per hour/day)
+- ACME challenge success/failure rate
+- Average issuance time
+{panel}
+
+h3. Sample Grafana Queries
+
+{code:language=promql|title=PromQL Queries for Dashboards}
+# Total valid certificates
+sum(openbao_pki_cert_valid_count)
+
+# Certificates expiring in next 30 days
+sum(openbao_pki_cert_expiring_count{threshold_days="30"})
+
+# Certificate issuance rate (per hour)
+rate(openbao_pki_cert_valid_count[1h]) * 3600
+
+# PKI mount health percentage
+(sum(openbao_pki_mount_health) / count(openbao_pki_mount_health)) * 100
+
+# ACME endpoint uptime (last 24h)
+avg_over_time(openbao_pki_acme_endpoint_health[24h]) * 100
+{code}
+
+h3. Dashboard JSON Export
+
+{info:title=Dashboard Import}
+A complete Grafana dashboard JSON can be imported for instant visualization. Key features:
+* Auto-refresh every 60 seconds
+* Drill-down capability for certificate details
+* Alert state indicators
+* Historical trending (last 7/30/90 days)
+{info}
+
+----
+
+h2. Layer 5: Cert-Manager Monitoring (Kubernetes)
+
+h3. Certificate Resource Status
+
+{code:language=bash|title=Monitor Cert-Manager Certificates}
+# List all certificates and their status
+kubectl get certificates -A
+
+# Check specific certificate details
+kubectl describe certificate solar-panel-cert
+
+# View cert-manager pod logs
+kubectl logs -n cert-manager deployment/cert-manager -f
+{code}
+
+h3. Certificate Status Conditions
+
+|| Condition || Meaning || Action ||
+| {{Ready=True}} | Certificate issued and valid | ✅ No action |
+| {{Ready=False}}, {{Issuing=True}} | Certificate being issued | ⏳ Wait for completion |
+| {{Ready=False}}, {{Reason=Expired}} | Certificate expired | ⚠️ Check renewal configuration |
+| {{Ready=False}}, {{Reason=Failed}} | Issuance failed | ❌ Check ACME challenge logs |
+
+h3. Cert-Manager Prometheus Metrics
+
+{code:language=promql|title=Cert-Manager Queries}
+# Certificates by readiness status
+sum by (condition) (certmanager_certificate_ready_status)
+
+# Certificate expiration time
+certmanager_certificate_expiration_timestamp_seconds - time()
+
+# ACME order success rate
+rate(certmanager_http_acme_order_total{status="valid"}[5m]) /
+rate(certmanager_http_acme_order_total[5m])
+{code}
+
+----
+
+h2. Complete Monitoring Workflow
+
+{code:title=Daily Monitoring Routine}
+09:00 - Automated Script Execution
+     ├─ Run monitor_certificate_lifecycle.sh
+     ├─ Generate report & Prometheus metrics
+     └─ Email report to PKI team
+
+Real-time - Prometheus Scraping
+     ├─ Scrape pki_metrics.prom every 60s
+     ├─ Evaluate alert rules
+     └─ Push to Alertmanager
+
+Continuous - Grafana Dashboards
+     ├─ Display current certificate status
+     ├─ Show expiration timeline
+     └─ Track ACME issuance activity
+
+On Alert - Incident Response
+     ├─ Slack/Email notification sent
+     ├─ On-call engineer investigates
+     └─ Remediation (renew/revoke/etc.)
+
+Weekly - Management Review
+     ├─ Review trends (issuance rate, revocations)
+     ├─ Validate certificate policy compliance
+     └─ Plan capacity (storage, performance)
+{code}
+
+----
+
+h2. Key Monitoring Metrics
+
+h3. Certificate Expiration Tracking
+
+|| Metric || Threshold || Alert Level ||
+| Days until Root CA expires | < 365 days | Critical |
+| Days until Intermediate CA expires | < 180 days | Critical |
+| Leaf certificates expiring | < 30 days | Warning |
+| Leaf certificates expiring | < 7 days | Critical |
+
+h3. Operational Health
+
+|| Metric || Threshold || Alert Level ||
+| PKI mount inaccessible | Any failure | Critical |
+| ACME endpoint down | > 2 minutes | Warning |
+| CRL not updated | > 24 hours | Warning |
+| Certificate issuance failure rate | > 5% | Warning |
+| Certificate storage growth | > 10,000/day | Info |
+
+h3. Security Indicators
+
+|| Metric || Threshold || Alert Level ||
+| Certificate revocation spike | > 10/hour | Critical |
+| Unauthorized PKI access attempts | Any | Critical |
+| Weak key algorithm usage | Any RSA < 2048 | Warning |
+| Certificate issued outside policy | Any | Critical |
+
+----
+
+h2. Troubleshooting Guide
+
+h3. Certificate Not Renewing
+
+{panel:title=Diagnosis Steps|bgColor=#fff3e0}
+# Check cert-manager logs for ACME challenge failures
+# Verify DNS resolution for domain
+# Ensure ACME endpoint is accessible from cluster
+# Check firewall rules for http-01 challenges
+# Validate role configuration (allowed_domains, max_ttl)
+{panel}
+
+h3. High Revocation Rate
+
+{panel:title=Investigation Steps|bgColor=#ffebee}
+# Review audit logs for revocation requests
+# Identify pattern: specific issuer, domain, or time period
+# Check for security incidents (compromised keys)
+# Validate revocation was intentional (system decommission, rotation)
+# Update CRL distribution if needed
+{panel}
+
+h3. PKI Mount Unhealthy
+
+{panel:title=Resolution Steps|bgColor=#ffebee}
+# Check OpenBao server status: {{bao status}}
+# Verify mount exists: {{bao secrets list}}
+# Check storage backend connectivity
+# Review OpenBao server logs for errors
+# Remount if necessary (with caution - may lose data)
+{panel}
+
+----
+
+h2. Best Practices
+
+{tip:title=Monitoring Best Practices}
+# *Set appropriate thresholds*: 30 days for leaf certs, 180 days for CAs
+# *Enable multiple alert channels*: Slack, email, PagerDuty
+# *Retain monitoring data*: Keep at least 90 days of metrics
+# *Regular reviews*: Weekly check of dashboards and trends
+# *Automate remediation*: Use cert-manager for auto-renewal
+# *Test alerting*: Simulate expiring certificates to verify alerts fire
+# *Document runbooks*: Clear procedures for each alert type
+# *Audit compliance*: Ensure monitoring meets regulatory requirements
+{tip}
+
+----
+
+h2. Files and Artifacts
+
+|| File || Purpose || Location ||
+| {{monitor_certificate_lifecycle.sh}} | Main monitoring script | Project root |
+| {{monitoring_reports/*.txt}} | Daily reports | {{./monitoring_reports/}} |
+| {{pki_metrics.prom}} | Prometheus metrics export | {{./monitoring_reports/}} |
+| {{prometheus.yml}} | Prometheus configuration | Prometheus config dir |
+| {{pki_alerts.yml}} | Alert rules | Prometheus rules dir |
+| Grafana dashboard JSON | Visual dashboards | Import via Grafana UI |
+
+----
+
+{panel:title=Next Steps|bgColor=#e3f2fd}
+# ✅ Set up cron job or Kubernetes CronJob for automated monitoring
+# ✅ Deploy Prometheus and configure scraping
+# ✅ Import Grafana dashboards
+# ✅ Configure alert notifications (Slack/Email)
+# ✅ Test certificate expiration alerts with short-lived test cert
+# ✅ Document incident response procedures
+{panel}
+
+{panel:title=Document Information|bgColor=#f5f5f5}
+*Created:* February 7, 2026
+*Version:* 1.0
+*Owner:* PKI Operations Team
+{panel}

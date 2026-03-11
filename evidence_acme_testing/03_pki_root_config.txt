@@ -1,0 +1,30 @@
+=== PKI Root Configuration ===
+Key                              Value
+---                              -----
+crl_distribution_points          [http://127.0.0.1:8200/v1/pki_root/crl]
+delta_crl_distribution_points    []
+enable_templating                false
+issuing_certificates             [http://127.0.0.1:8200/v1/pki_root/ca]
+ocsp_servers                     []
+
+=== Root CA Certificate ===
+-----BEGIN CERTIFICATE-----
+MIIDMzCCAhugAwIBAgIUe4RFwHaEZv3LwaWoBCwmJ4ZLxoUwDQYJKoZIhvcNAQEL
+BQAwITEfMB0GA1UEAxMWRW5lcmd5IENvbXBhbnkgUm9vdCBDQTAeFw0yNjAyMDcw
+MDM5NDlaFw0zNjAyMDUwMDQwMTlaMCExHzAdBgNVBAMTFkVuZXJneSBDb21wYW55
+IFJvb3QgQ0EwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCtpBlAoVNW
+3wUSJv/V6BdM3+MgaZsxR837PNuWZtKtaP6PHLSCnyd7MGjM2VTsGQ1cNYw0/VmA
+czDEYy4/BYOVoS0krM0aKBwK3BDYHKYBjk937uP/B9aIRgfVhlZisEDQDxhhWrWV
+em1kC3T78BQ2tttnKfgTxZTKj0X1iMYHtHEakBr7EHQbmSyC7jEVQx80pQBSzQ8B
+0e1HFYIxxS1+fLmwNSsGmbQSXX6VTo17wdgd9//f5oQ+Ryi5dTXZAVqdKC2hGYGw
+NOiCrN8ihg9YyFHF1f3jn91t4d5B77RvCfL3dcEZthlyoGm2Mk2Pg+/XSEwtm1QE
+xgPszucad2XlAgMBAAGjYzBhMA4GA1UdDwEB/wQEAwIBBjAPBgNVHRMBAf8EBTAD
+AQH/MB0GA1UdDgQWBBRQAGPF/UpyxmuZdAasDU8iFvO/cDAfBgNVHSMEGDAWgBRQ
+AGPF/UpyxmuZdAasDU8iFvO/cDANBgkqhkiG9w0BAQsFAAOCAQEAk9tazwiMWTLa
+/ne7jOCLyqFbUnoAP/d2IfrETLbcmDl5gRUMcbin7ZOFOX6VvtGcGfdBXQN8BBdr
+p2csMJtf0YswDNLI1G/e99J036slALpSgF0VmP+6hNXtcWM5EdPphKz0GhgbTdKn
+KqYIYnph6vvGEb/FtIfTkFvw8+okObkZ3avANvxHSuJ56drSwf5ab/Xp+D7nGrCM
+flIdYp0RYa7zyt2dQ3GZoHr7V0HEdjsA0kaaz1Jqvz7URLjVTNitaNgxU3URaicp
+s5uWNpl9ORn7MVYicmeKuehbp2nQKsbzi+lwajUnoMDLLyglJMX8vJFOcWYYJBwJ
+hht+qPh6QQ==
+-----END CERTIFICATE-----

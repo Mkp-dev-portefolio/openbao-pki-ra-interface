@@ -1,0 +1,95 @@
+2026-02-07 01:38:50,030:DEBUG:certbot._internal.main:certbot version: 4.2.0
+2026-02-07 01:38:50,031:DEBUG:certbot._internal.main:Location of certbot entry point: /opt/homebrew/bin/certbot
+2026-02-07 01:38:50,031:DEBUG:certbot._internal.main:Arguments: ['--standalone', '--server', 'http://127.0.0.1:8200/v1/pki_int/acme/directory', '--agree-tos', '--email', 'user@example.com', '-d', 'testserver.solar.energy.internal', '--http-01-port', '9999', '--config-dir', './certbot/config', '--work-dir', './certbot/work', '--logs-dir', './certbot/logs', '--dry-run']
+2026-02-07 01:38:50,031:DEBUG:certbot._internal.main:Discovered plugins: PluginsRegistry(PluginEntryPoint#apache,PluginEntryPoint#manual,PluginEntryPoint#nginx,PluginEntryPoint#null,PluginEntryPoint#standalone,PluginEntryPoint#webroot)
+2026-02-07 01:38:50,048:DEBUG:certbot._internal.log:Root logging level set at 30
+2026-02-07 01:38:50,049:DEBUG:certbot._internal.plugins.selection:Requested authenticator standalone and installer None
+2026-02-07 01:38:50,049:DEBUG:certbot._internal.plugins.selection:Single candidate plugin: * standalone
+Description: Runs an HTTP server locally which serves the necessary validation files under the /.well-known/acme-challenge/ request path. Suitable if there is no HTTP server already running. HTTP challenge only (wildcards not supported).
+Interfaces: Authenticator, Plugin
+Entry point: EntryPoint(name='standalone', value='certbot._internal.plugins.standalone:Authenticator', group='certbot.plugins')
+Initialized: <certbot._internal.plugins.standalone.Authenticator object at 0x106dc52b0>
+Prep: True
+2026-02-07 01:38:50,049:DEBUG:certbot._internal.plugins.selection:Selected authenticator <certbot._internal.plugins.standalone.Authenticator object at 0x106dc52b0> and installer None
+2026-02-07 01:38:50,049:INFO:certbot._internal.plugins.selection:Plugins selected: Authenticator standalone, Installer None
+2026-02-07 01:38:50,102:DEBUG:acme.client:Sending GET request to http://127.0.0.1:8200/v1/pki_int/acme/directory.
+2026-02-07 01:38:50,105:DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): 127.0.0.1:8200
+2026-02-07 01:38:50,147:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "GET /v1/pki_int/acme/directory HTTP/1.1" 403 33
+2026-02-07 01:38:50,147:DEBUG:acme.client:Received response:
+HTTP 403
+Cache-Control: no-store
+Content-Type: application/json
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:38:50 GMT
+Content-Length: 33
+
+{"errors":["permission denied"]}
+
+2026-02-07 01:38:50,147:DEBUG:acme.client:Ignoring wrong Content-Type ('application/json') for JSON Error
+2026-02-07 01:38:50,147:DEBUG:certbot._internal.main:
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/certbot/4.2.0/libexec/lib/python3.13/site-packages/certbot/_internal/main.py", line 747, in _determine_account
+    acc, acme = client.register(
+                ~~~~~~~~~~~~~~~^
+        config, account_storage, tos_cb=_tos_cb)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/certbot/4.2.0/libexec/lib/python3.13/site-packages/certbot/_internal/client.py", line 206, in register
+    acme = create_acme_client(config, key)
+  File "/opt/homebrew/Cellar/certbot/4.2.0/libexec/lib/python3.13/site-packages/certbot/_internal/client.py", line 77, in create_acme_client
+    directory = acme_client.ClientV2.get_directory(server, net)
+  File "/opt/homebrew/Cellar/certbot/4.2.0/libexec/lib/python3.13/site-packages/acme/client.py", line 435, in get_directory
+    return messages.Directory.from_json(net.get(url).json())
+                                        ~~~~~~~^^^^^
+  File "/opt/homebrew/Cellar/certbot/4.2.0/libexec/lib/python3.13/site-packages/acme/client.py", line 787, in get
+    return self._check_response(
+           ~~~~~~~~~~~~~~~~~~~~^
+        self._send_request('GET', url, **kwargs), content_type=content_type)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/certbot/4.2.0/libexec/lib/python3.13/site-packages/acme/client.py", line 708, in _check_response
+    raise messages.Error.from_json(jobj)
+acme.messages.Error: about:blank
+2026-02-07 01:38:50,150:DEBUG:certbot._internal.log:Exiting abnormally:
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/certbot/4.2.0/libexec/lib/python3.13/site-packages/certbot/_internal/main.py", line 747, in _determine_account
+    acc, acme = client.register(
+                ~~~~~~~~~~~~~~~^
+        config, account_storage, tos_cb=_tos_cb)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/certbot/4.2.0/libexec/lib/python3.13/site-packages/certbot/_internal/client.py", line 206, in register
+    acme = create_acme_client(config, key)
+  File "/opt/homebrew/Cellar/certbot/4.2.0/libexec/lib/python3.13/site-packages/certbot/_internal/client.py", line 77, in create_acme_client
+    directory = acme_client.ClientV2.get_directory(server, net)
+  File "/opt/homebrew/Cellar/certbot/4.2.0/libexec/lib/python3.13/site-packages/acme/client.py", line 435, in get_directory
+    return messages.Directory.from_json(net.get(url).json())
+                                        ~~~~~~~^^^^^
+  File "/opt/homebrew/Cellar/certbot/4.2.0/libexec/lib/python3.13/site-packages/acme/client.py", line 787, in get
+    return self._check_response(
+           ~~~~~~~~~~~~~~~~~~~~^
+        self._send_request('GET', url, **kwargs), content_type=content_type)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/certbot/4.2.0/libexec/lib/python3.13/site-packages/acme/client.py", line 708, in _check_response
+    raise messages.Error.from_json(jobj)
+acme.messages.Error: about:blank
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/bin/certbot", line 8, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/opt/homebrew/Cellar/certbot/4.2.0/libexec/lib/python3.13/site-packages/certbot/main.py", line 19, in main
+    return internal_main.main(cli_args)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/opt/homebrew/Cellar/certbot/4.2.0/libexec/lib/python3.13/site-packages/certbot/_internal/main.py", line 1877, in main
+    return config.func(config, plugins)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/certbot/4.2.0/libexec/lib/python3.13/site-packages/certbot/_internal/main.py", line 1567, in certonly
+    le_client = _init_le_client(config, auth, installer)
+  File "/opt/homebrew/Cellar/certbot/4.2.0/libexec/lib/python3.13/site-packages/certbot/_internal/main.py", line 839, in _init_le_client
+    acc, acme = _determine_account(config)
+                ~~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/opt/homebrew/Cellar/certbot/4.2.0/libexec/lib/python3.13/site-packages/certbot/_internal/main.py", line 760, in _determine_account
+    raise errors.Error(
+        f"Unable to register an account with ACME server. {err_msg}")
+certbot.errors.Error: Unable to register an account with ACME server. about:blank
+2026-02-07 01:38:50,151:ERROR:certbot._internal.log:Unable to register an account with ACME server. about:blank

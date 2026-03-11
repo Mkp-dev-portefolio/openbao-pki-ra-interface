@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<archimate:model xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:archimate="http://www.archimatetool.com/archimate" name="Key Ceremony Architecture (Context)" id="id-ceremony-context" version="5.0.0">
+  <folder name="Business" id="id-folder-business" type="business">
+    <element xsi:type="archimate:BusinessActor" name="HSM Security Officer" id="id-hsm-so"/>
+    <element xsi:type="archimate:BusinessProcess" name="Key Ceremony Process" id="id-process-ceremony"/>
+  </folder>
+  <folder name="Application" id="id-folder-application" type="application">
+    <element xsi:type="archimate:ApplicationService" name="OpenBao PKI (Offline Rooted)" id="id-svc-pki-offline"/>
+  </folder>
+  <folder name="Technology &amp; Physical" id="id-folder-technology" type="technology">
+    <element xsi:type="archimate:Device" name="Thales Luna 700 HSM" id="id-device-hsm"/>
+    <element xsi:type="archimate:Node" name="Offline Root Safe" id="id-node-offline"/>
+    <element xsi:type="archimate:Node" name="Kubernetes Cluster" id="id-node-k8s"/>
+  </folder>
+  <folder name="Relations" id="id-folder-relations" type="relations">
+    <element xsi:type="archimate:AssignmentRelationship" id="id-rel-1" source="id-hsm-so" target="id-process-ceremony"/>
+    <element xsi:type="archimate:AccessRelationship" id="id-rel-2" source="id-process-ceremony" target="id-device-hsm"/>
+    <element xsi:type="archimate:AssociationRelationship" id="id-rel-3" source="id-device-hsm" target="id-svc-pki-offline"/> <!-- Hardware backing -->
+    <element xsi:type="archimate:AssociationRelationship" id="id-rel-4" source="id-node-offline" target="id-svc-pki-offline"/> <!-- Trust Anchor -->
+    <element xsi:type="archimate:RealizationRelationship" id="id-rel-5" source="id-node-k8s" target="id-svc-pki-offline"/>
+  </folder>
+  <folder name="Views" id="id-folder-views" type="diagrams">
+    <element xsi:type="archimate:ArchimateDiagramModel" name="Ceremony Architecture Context" id="id-view-context">
+      <child xsi:type="archimate:DiagramObject" id="id-do-so" archimateElement="id-hsm-so">
+        <bounds x="200" y="50" width="150" height="55"/>
+        <sourceConnection xsi:type="archimate:Connection" id="id-conn-1" source="id-do-so" target="id-do-proc" archimateRelationship="id-rel-1"/>
+      </child>
+      <child xsi:type="archimate:DiagramObject" id="id-do-proc" targetConnections="id-conn-1" archimateElement="id-process-ceremony">
+        <bounds x="200" y="150" width="150" height="55"/>
+        <sourceConnection xsi:type="archimate:Connection" id="id-conn-2" source="id-do-proc" target="id-do-hsm" archimateRelationship="id-rel-2"/>
+      </child>
+      <child xsi:type="archimate:DiagramObject" id="id-do-hsm" targetConnections="id-conn-2" archimateElement="id-device-hsm">
+        <bounds x="50" y="300" width="150" height="55"/>
+        <sourceConnection xsi:type="archimate:Connection" id="id-conn-3" source="id-do-hsm" target="id-do-pki" archimateRelationship="id-rel-3"/>
+      </child>
+      <child xsi:type="archimate:DiagramObject" id="id-do-offline" archimateElement="id-node-offline">
+        <bounds x="350" y="300" width="150" height="55"/>
+        <sourceConnection xsi:type="archimate:Connection" id="id-conn-4" source="id-do-offline" target="id-do-pki" archimateRelationship="id-rel-4"/>
+      </child>
+      <child xsi:type="archimate:DiagramObject" id="id-do-pki" targetConnections="id-conn-3 id-conn-4 id-conn-5" archimateElement="id-svc-pki-offline">
+        <bounds x="200" y="450" width="150" height="55"/>
+      </child>
+      <child xsi:type="archimate:DiagramObject" id="id-do-k8s" archimateElement="id-node-k8s">
+        <bounds x="50" y="450" width="120" height="55"/>
+        <sourceConnection xsi:type="archimate:Connection" id="id-conn-5" source="id-do-k8s" target="id-do-pki" archimateRelationship="id-rel-5"/>
+      </child>
+    </element>
+  </folder>
+</archimate:model>

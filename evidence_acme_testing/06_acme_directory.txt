@@ -1,0 +1,11 @@
+=== ACME Directory Endpoint ===
+{
+  "keyChange": "http://127.0.0.1:8200/v1/pki_int/acme/key-change",
+  "meta": {
+    "externalAccountRequired": false
+  },
+  "newAccount": "http://127.0.0.1:8200/v1/pki_int/acme/new-account",
+  "newNonce": "http://127.0.0.1:8200/v1/pki_int/acme/new-nonce",
+  "newOrder": "http://127.0.0.1:8200/v1/pki_int/acme/new-order",
+  "revokeCert": "http://127.0.0.1:8200/v1/pki_int/acme/revoke-cert"
+}

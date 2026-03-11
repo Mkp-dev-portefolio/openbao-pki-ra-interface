@@ -1,0 +1,334 @@
+2026-02-07 01:41:49,012:DEBUG:certbot._internal.main:certbot version: 4.2.0
+2026-02-07 01:41:49,012:DEBUG:certbot._internal.main:Location of certbot entry point: /opt/homebrew/bin/certbot
+2026-02-07 01:41:49,012:DEBUG:certbot._internal.main:Arguments: ['--standalone', '--server', 'http://127.0.0.1:8200/v1/pki_int/acme/directory', '--agree-tos', '--email', 'user@example.com', '-d', 'test-acme.127.0.0.1.nip.io', '--http-01-port', '9999', '--config-dir', './certbot/config', '--work-dir', './certbot/work', '--logs-dir', './certbot/logs', '--non-interactive']
+2026-02-07 01:41:49,012:DEBUG:certbot._internal.main:Discovered plugins: PluginsRegistry(PluginEntryPoint#apache,PluginEntryPoint#manual,PluginEntryPoint#nginx,PluginEntryPoint#null,PluginEntryPoint#standalone,PluginEntryPoint#webroot)
+2026-02-07 01:41:49,030:DEBUG:certbot._internal.log:Root logging level set at 30
+2026-02-07 01:41:49,031:DEBUG:certbot._internal.plugins.selection:Requested authenticator standalone and installer None
+2026-02-07 01:41:49,031:DEBUG:certbot._internal.plugins.selection:Single candidate plugin: * standalone
+Description: Runs an HTTP server locally which serves the necessary validation files under the /.well-known/acme-challenge/ request path. Suitable if there is no HTTP server already running. HTTP challenge only (wildcards not supported).
+Interfaces: Authenticator, Plugin
+Entry point: EntryPoint(name='standalone', value='certbot._internal.plugins.standalone:Authenticator', group='certbot.plugins')
+Initialized: <certbot._internal.plugins.standalone.Authenticator object at 0x106ff1160>
+Prep: True
+2026-02-07 01:41:49,031:DEBUG:certbot._internal.plugins.selection:Selected authenticator <certbot._internal.plugins.standalone.Authenticator object at 0x106ff1160> and installer None
+2026-02-07 01:41:49,031:INFO:certbot._internal.plugins.selection:Plugins selected: Authenticator standalone, Installer None
+2026-02-07 01:41:49,070:DEBUG:certbot._internal.main:Picked account: <Account(RegistrationResource(body=Registration(key=None, contact=(), agreement=None, status=None, terms_of_service_agreed=None, only_return_existing=None, external_account_binding=None), uri='http://127.0.0.1:8200/v1/pki_int/acme/account/ce0e90c5-8565-624c-2280-88bf27216c66', new_authzr_uri=None, terms_of_service=None), 22ea2ec91a6a76866c95b9b14c4ba349, Meta(creation_dt=datetime.datetime(2026, 2, 7, 0, 40, 33, tzinfo=datetime.timezone.utc), creation_host='176.129.168.192.in-addr.arpa', register_to_eff=None))>
+2026-02-07 01:41:49,081:DEBUG:acme.client:Sending GET request to http://127.0.0.1:8200/v1/pki_int/acme/directory.
+2026-02-07 01:41:49,083:DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): 127.0.0.1:8200
+2026-02-07 01:41:49,087:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "GET /v1/pki_int/acme/directory HTTP/1.1" 200 357
+2026-02-07 01:41:49,087:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:41:49 GMT
+Content-Length: 357
+
+{"keyChange":"http://127.0.0.1:8200/v1/pki_int/acme/key-change","meta":{"externalAccountRequired":false},"newAccount":"http://127.0.0.1:8200/v1/pki_int/acme/new-account","newNonce":"http://127.0.0.1:8200/v1/pki_int/acme/new-nonce","newOrder":"http://127.0.0.1:8200/v1/pki_int/acme/new-order","revokeCert":"http://127.0.0.1:8200/v1/pki_int/acme/revoke-cert"}
+2026-02-07 01:41:49,088:DEBUG:certbot._internal.display.obj:Notifying user: Requesting a certificate for test-acme.127.0.0.1.nip.io
+2026-02-07 01:41:49,088:DEBUG:acme.client:Requesting fresh nonce
+2026-02-07 01:41:49,088:DEBUG:acme.client:Sending HEAD request to http://127.0.0.1:8200/v1/pki_int/acme/new-nonce.
+2026-02-07 01:41:49,090:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "HEAD /v1/pki_int/acme/new-nonce HTTP/1.1" 200 0
+2026-02-07 01:41:49,090:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQw9pRYh4icdO--063J8tOpH8j3yHPfD0QWmDsKqVpuPPPDyO4n5Jj_bQ
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:41:49 GMT
+
+
+2026-02-07 01:41:49,090:DEBUG:acme.client:Storing nonce: dmF1bHQw9pRYh4icdO--063J8tOpH8j3yHPfD0QWmDsKqVpuPPPDyO4n5Jj_bQ
+2026-02-07 01:41:49,090:DEBUG:acme.client:JWS payload:
+b'{\n  "identifiers": [\n    {\n      "type": "dns",\n      "value": "test-acme.127.0.0.1.nip.io"\n    }\n  ]\n}'
+2026-02-07 01:41:49,091:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/new-order:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXc5cFJZaDRpY2RPLS0wNjNKOHRPcEg4ajN5SFBmRDBRV21Ec0txVnB1UFBQRHlPNG41SmpfYlEiLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvbmV3LW9yZGVyIn0",
+  "signature": "QVPu1zLKSKAJLJSduYClHvJGBcn9cAbatva8e64RvjPHvORQDw6yGHMIhzzlk126hxbEmkGN9RiLiDb-Q9lsa1TkZZTKwn02wGb7470U7DNaU7-iG2vZehGuoshUV8omBSyRL53UUf90rHGM9KpOC85i2Pq75qgF33u6ycpr5Hju0Q5xm0-IDOr8GTQR8DcGgRfqzfCzePzd3Q8OnpiWtX1SyFOUT95lvqtSj05Eb8shHmRu8qAszNx4g0Inv4CYGg-OY47kst7ArNhczOsvR4tWFYM4BAEsv3ighgd_pjNJttulvq2jZj3nUjEcEYx9bm8SRpUOlw934lOW2Ns8BA",
+  "payload": "ewogICJpZGVudGlmaWVycyI6IFsKICAgIHsKICAgICAgInR5cGUiOiAiZG5zIiwKICAgICAgInZhbHVlIjogInRlc3QtYWNtZS4xMjcuMC4wLjEubmlwLmlvIgogICAgfQogIF0KfQ"
+}
+2026-02-07 01:41:49,093:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/new-order HTTP/1.1" 201 334
+2026-02-07 01:41:49,093:DEBUG:acme.client:Received response:
+HTTP 201
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Location: http://127.0.0.1:8200/v1/pki_int/acme/order/1ed0442f-ca73-32f3-0866-da61438d428f
+Replay-Nonce: dmF1bHQw-70OCRxn-xKFny-M5OYg8Ixt268FodSJN7p-Rnuzb2FbQtXiVkVohg
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:41:49 GMT
+Content-Length: 334
+
+{"authorizations":["http://127.0.0.1:8200/v1/pki_int/acme/authorization/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c"],"expires":"2026-02-08T00:41:49Z","finalize":"http://127.0.0.1:8200/v1/pki_int/acme/order/1ed0442f-ca73-32f3-0866-da61438d428f/finalize","identifiers":[{"type":"dns","value":"test-acme.127.0.0.1.nip.io"}],"status":"pending"}
+2026-02-07 01:41:49,093:DEBUG:acme.client:Storing nonce: dmF1bHQw-70OCRxn-xKFny-M5OYg8Ixt268FodSJN7p-Rnuzb2FbQtXiVkVohg
+2026-02-07 01:41:49,093:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:41:49,095:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXctNzBPQ1J4bi14S0ZueS1NNU9ZZzhJeHQyNjhGb2RTSk43cC1SbnV6YjJGYlF0WGlWa1ZvaGciLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi8xOGExMmEwYi1jMGM4LTRjYTItYjczMC1iOGEwMWE1YjY2M2MifQ",
+  "signature": "g5ukyJxQwbWOo6HArHsiNolSkFcwUWPcmS3Fp35FZibNXbfMBBfQ2HAeJsx6js0JsV1fg5El_A5a00UY4D50pZ_9OXEK6g8hUcUvzDb5l4ten8LfDFLCSMSL4T2H4yqStBbGkyJFm0EsUPc27gHwT5cAiovq2lKDyv4xkbXuiURA7MxG6Fu98ZXNMPkAR8g2-PuIDw1u3eOlq7t9ey29UsUvHIEGaNkXlirw1UrJdbxDYKqN8lzOq96pFYIKewmW3O0g4o50oq0qlOTchEOKn9boSRYoM-HssljxS2w4OqXJM_vx042wKJx3V7k0hmUL-Jwrl6BdryIz5uYNEYRKLQ",
+  "payload": ""
+}
+2026-02-07 01:41:49,097:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c HTTP/1.1" 200 657
+2026-02-07 01:41:49,097:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQwM85XoZUod1qP7GdI1j2NtI7A6YQscBILRSrzTOl8RVhbTvn5phKvyA
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:41:49 GMT
+Content-Length: 657
+
+{"challenges":[{"status":"pending","token":"90zm1IwE6_PuK56cTb_9nwgK8hwR","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/http-01"},{"status":"pending","token":"YoiW88OtO6jkAlKKADzqea6P8XK4","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/dns-01"},{"status":"pending","token":"VExK05JJyT3Fkb1U0jKUSX2DyJ2f","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/tls-alpn-01"}],"identifier":{"type":"dns","value":"test-acme.127.0.0.1.nip.io"},"status":"pending","wildcard":false}
+2026-02-07 01:41:49,097:DEBUG:acme.client:Storing nonce: dmF1bHQwM85XoZUod1qP7GdI1j2NtI7A6YQscBILRSrzTOl8RVhbTvn5phKvyA
+2026-02-07 01:41:49,097:INFO:certbot._internal.auth_handler:Performing the following challenges:
+2026-02-07 01:41:49,098:INFO:certbot._internal.auth_handler:http-01 challenge for test-acme.127.0.0.1.nip.io
+2026-02-07 01:41:49,118:DEBUG:acme.standalone:Successfully bound to :9999 using IPv6
+2026-02-07 01:41:49,118:DEBUG:acme.standalone:Certbot wasn't able to bind to :9999 using IPv4, this is often expected due to the dual stack nature of IPv6 socket implementations.
+2026-02-07 01:41:49,119:DEBUG:acme.client:JWS payload:
+b'{}'
+2026-02-07 01:41:49,120:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/http-01:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXdNODVYb1pVb2QxcVA3R2RJMWoyTnRJN0E2WVFzY0JJTFJTcnpUT2w4UlZoYlR2bjVwaEt2eUEiLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvY2hhbGxlbmdlLzE4YTEyYTBiLWMwYzgtNGNhMi1iNzMwLWI4YTAxYTViNjYzYy9odHRwLTAxIn0",
+  "signature": "JEE8HRoiQ6TnHe2FX9W46y-zM9dMbymbdSe3uZ0mFXfm1xudc7drFZl1NtPzGwiv8McVf2RF29IDSgIWLm4IFscN472oO5FayOPjetT9OcSFQul_eSTAeIB8QtMsB0GtIzVLNX3Sea6wKCz5mwVZYm8YfCiy_T0t3sJp-4sxWk0MIiAHcA2g04zXuqzvM5VCyEhryjTR5LdJ1qLykIioH0gjPxAiWuct66xbnI41nOSim6U0D703YSEuy6WsdpqN5QKLVboEMLyU8MXiqhIswzjyhief9VsrCHq_Z19bD2SNJxi4cVVB6TooK0zkGkrxOtoMPEtAXtmp7c7U9WO7Dg",
+  "payload": "e30"
+}
+2026-02-07 01:41:49,124:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/http-01 HTTP/1.1" 200 180
+2026-02-07 01:41:49,124:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/authorization/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c>;rel="up", <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQwzhlO-7Lo16xayvJKSdGAL57v-YfnaY-2yzK6cmwN3iCdI9A46VBVJg
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:41:49 GMT
+Content-Length: 180
+
+{"status":"processing","token":"90zm1IwE6_PuK56cTb_9nwgK8hwR","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/http-01"}
+2026-02-07 01:41:49,124:DEBUG:acme.client:Storing nonce: dmF1bHQwzhlO-7Lo16xayvJKSdGAL57v-YfnaY-2yzK6cmwN3iCdI9A46VBVJg
+2026-02-07 01:41:49,124:INFO:certbot._internal.auth_handler:Waiting for verification...
+2026-02-07 01:41:50,129:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:41:50,133:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXd6aGxPLTdMbzE2eGF5dkpLU2RHQUw1N3YtWWZuYVktMnl6SzZjbXdOM2lDZEk5QTQ2VkJWSmciLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi8xOGExMmEwYi1jMGM4LTRjYTItYjczMC1iOGEwMWE1YjY2M2MifQ",
+  "signature": "gzkwpmTy3ihiOImgephbfm7rXLHC4E3Fb5oOE-fFCWiVsfGbklqpOM-ZxJZydD4nhZYAf5EOFxruhrgl69A9xv8qB32bM6PQnDeH9SqrYgqM8LloWoYmPzPxQ5KXzrU5BWIJtj3WsKcLFeRrY-KSyvblryg3rgoOxq2TndHLTYCT5yj79_U-WlGF0RxtdBNHPVZFTivWmD5bW_PWw1G1_ATukcbLIwufqJojo2NEWEIQEAFBp-9W9ziBLGJE7AIlSr-c7pZcXG_36fRD39L98Kb108y8pup0N3U_RXFU3zcnRQ7KvWsohzoullu3egjgyMhIyOAms3AZYeP67MbhXQ",
+  "payload": ""
+}
+2026-02-07 01:41:50,140:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c HTTP/1.1" 200 1346
+2026-02-07 01:41:50,140:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQw9QDamE8awFMxyQRIdMEEAhIuJvSmnAv3k9UC-IpAKYT_RwwxGHDJTA
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:41:50 GMT
+Content-Length: 1346
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge 18a12a0b-c0c8-4ca2-b730-b8a01a5b663c-http-01: http-01: failed to fetch path http://test-acme.127.0.0.1.nip.io/.well-known/acme-challenge/90zm1IwE6_PuK56cTb_9nwgK8hwR: Get \"http://test-acme.127.0.0.1.nip.io/.well-known/acme-challenge/90zm1IwE6_PuK56cTb_9nwgK8hwR\": dial tcp: lookup test-acme.127.0.0.1.nip.io on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"90zm1IwE6_PuK56cTb_9nwgK8hwR","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/http-01"},{"status":"pending","token":"YoiW88OtO6jkAlKKADzqea6P8XK4","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/dns-01"},{"status":"pending","token":"VExK05JJyT3Fkb1U0jKUSX2DyJ2f","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/tls-alpn-01"}],"identifier":{"type":"dns","value":"test-acme.127.0.0.1.nip.io"},"status":"pending","wildcard":false}
+2026-02-07 01:41:50,140:DEBUG:acme.client:Storing nonce: dmF1bHQw9QDamE8awFMxyQRIdMEEAhIuJvSmnAv3k9UC-IpAKYT_RwwxGHDJTA
+2026-02-07 01:41:53,145:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:41:53,146:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXc5UURhbUU4YXdGTXh5UVJJZE1FRUFoSXVKdlNtbkF2M2s5VUMtSXBBS1lUX1J3d3hHSERKVEEiLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi8xOGExMmEwYi1jMGM4LTRjYTItYjczMC1iOGEwMWE1YjY2M2MifQ",
+  "signature": "cFvD2JeJ-ITxszhMXcxOcMX9A411uWmVuWnRLgI0Wg3C8U__rFvP8wirazoejcWOrhZYkeoYgKZDgDj_L9Pyb3Hascw0b0b5Us2myWMmvFOtko8BWADdeFVNaFBQQH51WAdXaMfXbeCSyJOC_ZHEiQ4sar19VSukLUxjT-Wy0hbLsQPwmpv1H6PCQDvd5Qyiiji_6_xVFGitJ-1tqo4q0Ufi1P_QC2Ll4mrZrb5zF1P2af8CZIEJB9MD8gAkDTH9GRjs7Zj1xUGMivadv4YwfJjCz_cPkDFpy0aFLXte0GGxWfRQ7-9AVXNRS7UH4xgMU5_dqVuYZ6oparq72tNsSw",
+  "payload": ""
+}
+2026-02-07 01:41:53,151:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c HTTP/1.1" 200 1346
+2026-02-07 01:41:53,152:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQwhO59TmA7wIEfAOi-nSPEiKiWl0QmdEGSkDxMPrqH9M320VhjHE3xSA
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:41:53 GMT
+Content-Length: 1346
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge 18a12a0b-c0c8-4ca2-b730-b8a01a5b663c-http-01: http-01: failed to fetch path http://test-acme.127.0.0.1.nip.io/.well-known/acme-challenge/90zm1IwE6_PuK56cTb_9nwgK8hwR: Get \"http://test-acme.127.0.0.1.nip.io/.well-known/acme-challenge/90zm1IwE6_PuK56cTb_9nwgK8hwR\": dial tcp: lookup test-acme.127.0.0.1.nip.io on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"90zm1IwE6_PuK56cTb_9nwgK8hwR","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/http-01"},{"status":"pending","token":"YoiW88OtO6jkAlKKADzqea6P8XK4","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/dns-01"},{"status":"pending","token":"VExK05JJyT3Fkb1U0jKUSX2DyJ2f","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/tls-alpn-01"}],"identifier":{"type":"dns","value":"test-acme.127.0.0.1.nip.io"},"status":"pending","wildcard":false}
+2026-02-07 01:41:53,152:DEBUG:acme.client:Storing nonce: dmF1bHQwhO59TmA7wIEfAOi-nSPEiKiWl0QmdEGSkDxMPrqH9M320VhjHE3xSA
+2026-02-07 01:41:56,156:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:41:56,158:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXdoTzU5VG1BN3dJRWZBT2ktblNQRWlLaVdsMFFtZEVHU2tEeE1QcnFIOU0zMjBWaGpIRTN4U0EiLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi8xOGExMmEwYi1jMGM4LTRjYTItYjczMC1iOGEwMWE1YjY2M2MifQ",
+  "signature": "RoVy6lsygSqWHXYIztMFpgOi7BI-TaTTki2fldmSg9fWOyxMlpS3OFtodxStzZDOU9Ms65w_fgp_-j6re25MiwMDnoAWMeRQ-3Cqk6eQizL7nWegjhWysYeLQjBWhZ7w7Z7qc-8YTMcOYZSj4s4srqeiZ-LSRTD-RGc2fM9kUGzNErxsyoRTJZzhW9XVysOEZ5tH9f8K9mV7JbpWj82P2b_P02PajZVXEX3J4lngjD49RGo2veil5bYzI5rcL70OkfvFvAYCvMGTQQnOkjyGQp69g7Srshey5hAwOvHsGWAA38o-dF1CTNNTeLWscw_s8Hwalr1LLC-N0AB9STXVww",
+  "payload": ""
+}
+2026-02-07 01:41:56,171:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c HTTP/1.1" 200 1346
+2026-02-07 01:41:56,171:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQwwap_oLh0FNDHv40Q06pgqaOE_k-_gTiHXM_Xw0gB-wcPNO5LRufEIA
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:41:56 GMT
+Content-Length: 1346
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge 18a12a0b-c0c8-4ca2-b730-b8a01a5b663c-http-01: http-01: failed to fetch path http://test-acme.127.0.0.1.nip.io/.well-known/acme-challenge/90zm1IwE6_PuK56cTb_9nwgK8hwR: Get \"http://test-acme.127.0.0.1.nip.io/.well-known/acme-challenge/90zm1IwE6_PuK56cTb_9nwgK8hwR\": dial tcp: lookup test-acme.127.0.0.1.nip.io on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"90zm1IwE6_PuK56cTb_9nwgK8hwR","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/http-01"},{"status":"pending","token":"YoiW88OtO6jkAlKKADzqea6P8XK4","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/dns-01"},{"status":"pending","token":"VExK05JJyT3Fkb1U0jKUSX2DyJ2f","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/tls-alpn-01"}],"identifier":{"type":"dns","value":"test-acme.127.0.0.1.nip.io"},"status":"pending","wildcard":false}
+2026-02-07 01:41:56,171:DEBUG:acme.client:Storing nonce: dmF1bHQwwap_oLh0FNDHv40Q06pgqaOE_k-_gTiHXM_Xw0gB-wcPNO5LRufEIA
+2026-02-07 01:41:59,171:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:41:59,172:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXd3YXBfb0xoMEZOREh2NDBRMDZwZ3FhT0Vfay1fZ1RpSFhNX1h3MGdCLXdjUE5PNUxSdWZFSUEiLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi8xOGExMmEwYi1jMGM4LTRjYTItYjczMC1iOGEwMWE1YjY2M2MifQ",
+  "signature": "fNWMZNbZ73xFm-ME1uvp7nDXMuU-glpSdzI_U9DmXxo25_yZ5aaE42T1ixBN-2GIF0dJ7D9PV47hg_y430I3Q4sIDS-ZNYVNnviq8flETS2hJ_zZNYUfeWV4aIdQm3kT-zem78gpg34E97EjEBcUANlJYrqwF6Gt9GLCV9SvppEamU_l4qvmeQIOQWM2TYhAaVbnRKbWhL8tn0qb5pTrMlOsGmWPG3-twP41uFUAZ88zrQ2CaHW0Y3IxdclQB9a3FZWouzNkmjUrXOtkipgeq-xNFA7fllfjLh-ZxL64yxec7GcinrtrGN3vGQ8cF-x85tWyN6ATgk-v2kvgGqfgFg",
+  "payload": ""
+}
+2026-02-07 01:41:59,181:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c HTTP/1.1" 200 1346
+2026-02-07 01:41:59,182:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQwG02dowyikzZ_rIaUTgFGdTQsuIGMF66vXhBPRumNrI7LXKQ6A6o5NQ
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:41:59 GMT
+Content-Length: 1346
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge 18a12a0b-c0c8-4ca2-b730-b8a01a5b663c-http-01: http-01: failed to fetch path http://test-acme.127.0.0.1.nip.io/.well-known/acme-challenge/90zm1IwE6_PuK56cTb_9nwgK8hwR: Get \"http://test-acme.127.0.0.1.nip.io/.well-known/acme-challenge/90zm1IwE6_PuK56cTb_9nwgK8hwR\": dial tcp: lookup test-acme.127.0.0.1.nip.io on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"90zm1IwE6_PuK56cTb_9nwgK8hwR","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/http-01"},{"status":"pending","token":"YoiW88OtO6jkAlKKADzqea6P8XK4","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/dns-01"},{"status":"pending","token":"VExK05JJyT3Fkb1U0jKUSX2DyJ2f","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/tls-alpn-01"}],"identifier":{"type":"dns","value":"test-acme.127.0.0.1.nip.io"},"status":"pending","wildcard":false}
+2026-02-07 01:41:59,182:DEBUG:acme.client:Storing nonce: dmF1bHQwG02dowyikzZ_rIaUTgFGdTQsuIGMF66vXhBPRumNrI7LXKQ6A6o5NQ
+2026-02-07 01:42:02,182:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:42:02,183:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXdHMDJkb3d5aWt6Wl9ySWFVVGdGR2RUUXN1SUdNRjY2dlhoQlBSdW1Ockk3TFhLUTZBNm81TlEiLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi8xOGExMmEwYi1jMGM4LTRjYTItYjczMC1iOGEwMWE1YjY2M2MifQ",
+  "signature": "cI3cVTNg4Ns17P6Du-Gwtw_mhGfWgCR4_LCE67VGhnlUt5boYh-JRLX5PZ6dy-U_pd0QmTW_5HJYmsgBy6Y3G1lXtmhuoKEz-aTynbkqOc-5G51cZXYSZGs_A2r30mv9EsXJOR_x0wLI5koSIAl7kKfqLSeJ6K8ijIaF7p9CJSSRy4d3O15bPuTfwg9_pqopMh9Xi1AJoAyS2PL4IIS-OqTaNMeqHN6xA6dHCHIWkUWJZTbKOIQlSdOXmEa_X9ZdkBgWr3U-EG2FIObhvX-2py81tDff-_zmsuTHjyIz8ZGPo2IvQbv5CBE4_oArBhTINooitgqUnr8pn-8rpx0Zyw",
+  "payload": ""
+}
+2026-02-07 01:42:02,186:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c HTTP/1.1" 200 1346
+2026-02-07 01:42:02,186:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQw3i6MrrOl8MWM4wIloqBcNmQsm152E4UWJbMYNDKFY34Uz4Zi2BKE-g
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:42:02 GMT
+Content-Length: 1346
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge 18a12a0b-c0c8-4ca2-b730-b8a01a5b663c-http-01: http-01: failed to fetch path http://test-acme.127.0.0.1.nip.io/.well-known/acme-challenge/90zm1IwE6_PuK56cTb_9nwgK8hwR: Get \"http://test-acme.127.0.0.1.nip.io/.well-known/acme-challenge/90zm1IwE6_PuK56cTb_9nwgK8hwR\": dial tcp: lookup test-acme.127.0.0.1.nip.io on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"90zm1IwE6_PuK56cTb_9nwgK8hwR","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/http-01"},{"status":"pending","token":"YoiW88OtO6jkAlKKADzqea6P8XK4","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/dns-01"},{"status":"pending","token":"VExK05JJyT3Fkb1U0jKUSX2DyJ2f","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/tls-alpn-01"}],"identifier":{"type":"dns","value":"test-acme.127.0.0.1.nip.io"},"status":"pending","wildcard":false}
+2026-02-07 01:42:02,186:DEBUG:acme.client:Storing nonce: dmF1bHQw3i6MrrOl8MWM4wIloqBcNmQsm152E4UWJbMYNDKFY34Uz4Zi2BKE-g
+2026-02-07 01:42:05,189:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:42:05,197:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXczaTZNcnJPbDhNV000d0lsb3FCY05tUXNtMTUyRTRVV0piTVlOREtGWTM0VXo0WmkyQktFLWciLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi8xOGExMmEwYi1jMGM4LTRjYTItYjczMC1iOGEwMWE1YjY2M2MifQ",
+  "signature": "hmDT6YLa5UuoR0WVysPV3SXlZZIabKArBQ_HSxxS7EotZYb8PJOFq1Ici6Ur0xerPZz2LjApPgxLuulmZJf6-C5uMjLhJLNZleXMUnUiuragqaCb0ep4brRpQ7anYURwgFeV82C60jquuG8agi0AbRGZ2MXjUsReVcRNr9SjVqcFGkMXGbyhuG0Ds-oeL-lubnnFO0FkqTvmIlv48cX-3zjEqzSoE0KmR8RSJ8rvykBUGLsiusg9_ZtHRWL6uak0CXcD436e0KfPuEEc_x1hWmeT2cvHV3u7GAhkRwpoCh53mCqP1mc6F8_mm2nVIogTMGwVIwFZthO_waORaeLkbA",
+  "payload": ""
+}
+2026-02-07 01:42:05,242:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c HTTP/1.1" 200 1346
+2026-02-07 01:42:05,242:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQw5m_LnjjV_83jQ3A-CPfEdZLYy75tOSxdN0TvABhnnB6wcygtw8GZeg
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:42:05 GMT
+Content-Length: 1346
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge 18a12a0b-c0c8-4ca2-b730-b8a01a5b663c-http-01: http-01: failed to fetch path http://test-acme.127.0.0.1.nip.io/.well-known/acme-challenge/90zm1IwE6_PuK56cTb_9nwgK8hwR: Get \"http://test-acme.127.0.0.1.nip.io/.well-known/acme-challenge/90zm1IwE6_PuK56cTb_9nwgK8hwR\": dial tcp: lookup test-acme.127.0.0.1.nip.io on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"90zm1IwE6_PuK56cTb_9nwgK8hwR","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/http-01"},{"status":"pending","token":"YoiW88OtO6jkAlKKADzqea6P8XK4","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/dns-01"},{"status":"pending","token":"VExK05JJyT3Fkb1U0jKUSX2DyJ2f","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/tls-alpn-01"}],"identifier":{"type":"dns","value":"test-acme.127.0.0.1.nip.io"},"status":"pending","wildcard":false}
+2026-02-07 01:42:05,242:DEBUG:acme.client:Storing nonce: dmF1bHQw5m_LnjjV_83jQ3A-CPfEdZLYy75tOSxdN0TvABhnnB6wcygtw8GZeg
+2026-02-07 01:42:08,320:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:42:08,411:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXc1bV9MbmpqVl84M2pRM0EtQ1BmRWRaTFl5NzV0T1N4ZE4wVHZBQmhubkI2d2N5Z3R3OEdaZWciLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi8xOGExMmEwYi1jMGM4LTRjYTItYjczMC1iOGEwMWE1YjY2M2MifQ",
+  "signature": "YUEkOjHPTxCg04BTDwDqVd0EJ6Kt6Cob3X6iVFcf23mF1wIA2jrJDb4FwmhT4TS0rpoNnPkujozzukQkWTS0PDbxb2FZbLI_PYozy_0t5mHzSGyo1IFtF_HD-yW9l9pTDkkuf4FPUJOPiWJXAM8XCz7-O7In90KtkJZ79r62lG48UsSvrdO1lhSsFK3Gxkj9c71yT_FVm1WJOdB1p0nNOK8PEIumY1e4mylXVHuradq-7UuhdO3lY3nxf8NamgnJyQVnAUJFE69gfzEnof1RExU0xZdUhhr9RzVD0v0dx_2nmOjkVZd0-zeQpDkGXF6Zjo-eiiNtTc_FzrBK170ckA",
+  "payload": ""
+}
+2026-02-07 01:42:08,650:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c HTTP/1.1" 200 1346
+2026-02-07 01:42:08,653:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQwg8bDTTrGRuHxt1Awjzqltl06V9en1DxVErfOGWkaqtOVepe6z0wQsw
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:42:08 GMT
+Content-Length: 1346
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge 18a12a0b-c0c8-4ca2-b730-b8a01a5b663c-http-01: http-01: failed to fetch path http://test-acme.127.0.0.1.nip.io/.well-known/acme-challenge/90zm1IwE6_PuK56cTb_9nwgK8hwR: Get \"http://test-acme.127.0.0.1.nip.io/.well-known/acme-challenge/90zm1IwE6_PuK56cTb_9nwgK8hwR\": dial tcp: lookup test-acme.127.0.0.1.nip.io on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"90zm1IwE6_PuK56cTb_9nwgK8hwR","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/http-01"},{"status":"pending","token":"YoiW88OtO6jkAlKKADzqea6P8XK4","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/dns-01"},{"status":"pending","token":"VExK05JJyT3Fkb1U0jKUSX2DyJ2f","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/tls-alpn-01"}],"identifier":{"type":"dns","value":"test-acme.127.0.0.1.nip.io"},"status":"pending","wildcard":false}
+2026-02-07 01:42:08,654:DEBUG:acme.client:Storing nonce: dmF1bHQwg8bDTTrGRuHxt1Awjzqltl06V9en1DxVErfOGWkaqtOVepe6z0wQsw
+2026-02-07 01:42:11,657:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:42:11,658:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXdnOGJEVFRyR1J1SHh0MUF3anpxbHRsMDZWOWVuMUR4VkVyZk9HV2thcXRPVmVwZTZ6MHdRc3ciLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi8xOGExMmEwYi1jMGM4LTRjYTItYjczMC1iOGEwMWE1YjY2M2MifQ",
+  "signature": "FhytZ8jNhL0aadcc3O8Mu_pXkZeScboIx9_8m6__ZX5KA_oidnqptGNer82gSXkLgrk4W3jTn4XqzsHWmpV6XKH8-QnawZ_Rp9jnvJWYyv5riwwdwsHRL4_Dxd-yQ5gnkscfNCIXAerXj_0Gv2JtaIuU8jUt_KridnFC0qSl3CdvY0rLIeS37ODm6vRqzD_Rq02KHnrBl8APC3-cgi8T3kP8HKzAIvyASEt324KBym6tDSfalzkiSl5hY2MTd7W-oNeIY7pYpF9HYEQyU0guwUn7pX6T4UV9bpxpk9GrGCOiyGS3pUSQhh7UyXLlOh2-2nivH7H7f65prha16TsmkA",
+  "payload": ""
+}
+2026-02-07 01:42:11,663:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c HTTP/1.1" 200 1346
+2026-02-07 01:42:11,663:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQw2KWaFUMuUwoVr4XZJPO21IqEbFOH8LCa9D44KTuOhXK7WJDfZKBgpQ
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:42:11 GMT
+Content-Length: 1346
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge 18a12a0b-c0c8-4ca2-b730-b8a01a5b663c-http-01: http-01: failed to fetch path http://test-acme.127.0.0.1.nip.io/.well-known/acme-challenge/90zm1IwE6_PuK56cTb_9nwgK8hwR: Get \"http://test-acme.127.0.0.1.nip.io/.well-known/acme-challenge/90zm1IwE6_PuK56cTb_9nwgK8hwR\": dial tcp: lookup test-acme.127.0.0.1.nip.io on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"90zm1IwE6_PuK56cTb_9nwgK8hwR","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/http-01"},{"status":"pending","token":"YoiW88OtO6jkAlKKADzqea6P8XK4","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/dns-01"},{"status":"pending","token":"VExK05JJyT3Fkb1U0jKUSX2DyJ2f","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/tls-alpn-01"}],"identifier":{"type":"dns","value":"test-acme.127.0.0.1.nip.io"},"status":"pending","wildcard":false}
+2026-02-07 01:42:11,663:DEBUG:acme.client:Storing nonce: dmF1bHQw2KWaFUMuUwoVr4XZJPO21IqEbFOH8LCa9D44KTuOhXK7WJDfZKBgpQ
+2026-02-07 01:42:14,663:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:42:14,664:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXcyS1dhRlVNdVV3b1ZyNFhaSlBPMjFJcUViRk9IOExDYTlENDRLVHVPaFhLN1dKRGZaS0JncFEiLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi8xOGExMmEwYi1jMGM4LTRjYTItYjczMC1iOGEwMWE1YjY2M2MifQ",
+  "signature": "U2SsqHzQa6CklwCrkybA_wOLxjnfWFj7mm19y43L2DAXAnRS8gjL9zCy5qeIfhJEEtT4D1LU4e9ikBjlo-NVAouU6Zd2eRGDjWOtBjSkPoSrMUogwhVPGvxDsa3qnLisctYrkvwfErQoKIlcvTrSr8G-YiPwNocFrWxUkAuQUO1prJxVdkZLiuWAoDJenuw3_KuIYJhlQwqmbJ1vex3qKh3PvJ1dqSgKNNFU-TpLQzHFmps0r7k26xQs3s7cYdnyonLsIYr-Q3M_IzrxyqjDtvf7pQ_cvOKZMpUXxVPxqOFo7NyCR5R4asXCCgokDJC8c3GFiyrteLA8psf8sOBo4Q",
+  "payload": ""
+}
+2026-02-07 01:42:14,671:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c HTTP/1.1" 200 1346
+2026-02-07 01:42:14,671:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQwEvC1ksLSL2Q30-5eTknBL747MWcyg6f62GNqkgV50RR7ije2LTwu2g
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:42:14 GMT
+Content-Length: 1346
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge 18a12a0b-c0c8-4ca2-b730-b8a01a5b663c-http-01: http-01: failed to fetch path http://test-acme.127.0.0.1.nip.io/.well-known/acme-challenge/90zm1IwE6_PuK56cTb_9nwgK8hwR: Get \"http://test-acme.127.0.0.1.nip.io/.well-known/acme-challenge/90zm1IwE6_PuK56cTb_9nwgK8hwR\": dial tcp: lookup test-acme.127.0.0.1.nip.io on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"90zm1IwE6_PuK56cTb_9nwgK8hwR","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/http-01"},{"status":"pending","token":"YoiW88OtO6jkAlKKADzqea6P8XK4","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/dns-01"},{"status":"pending","token":"VExK05JJyT3Fkb1U0jKUSX2DyJ2f","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/tls-alpn-01"}],"identifier":{"type":"dns","value":"test-acme.127.0.0.1.nip.io"},"status":"pending","wildcard":false}
+2026-02-07 01:42:14,671:DEBUG:acme.client:Storing nonce: dmF1bHQwEvC1ksLSL2Q30-5eTknBL747MWcyg6f62GNqkgV50RR7ije2LTwu2g
+2026-02-07 01:42:17,675:DEBUG:acme.client:JWS payload:
+b''
+2026-02-07 01:42:17,676:DEBUG:acme.client:Sending POST request to http://127.0.0.1:8200/v1/pki_int/acme/authorization/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYWNjb3VudC9jZTBlOTBjNS04NTY1LTYyNGMtMjI4MC04OGJmMjcyMTZjNjYiLCAibm9uY2UiOiAiZG1GMWJIUXdFdkMxa3NMU0wyUTMwLTVlVGtuQkw3NDdNV2N5ZzZmNjJHTnFrZ1Y1MFJSN2lqZTJMVHd1MmciLCAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6ODIwMC92MS9wa2lfaW50L2FjbWUvYXV0aG9yaXphdGlvbi8xOGExMmEwYi1jMGM4LTRjYTItYjczMC1iOGEwMWE1YjY2M2MifQ",
+  "signature": "Zqqm4Mx8POAL4xmT7eF0opIp29vYqSBJxmNP67EC1I7lDVdaHcnckKZC2ximP4fRADNe5u_AiFIQeDkgESiOMYAiPoGf2QZZjh5M8Lllf0XuBPNX9QmvfRUEsmoHC5x431vos-9QHFByAfWI0yPw5dSN7ETkXJ1PeOwEmrZxJPij7olThSpko6cWGoMPye1AEHevT0Fdk-YZoDoTPMZCM8_BZo__K779fDLPiAiK6g6OL6rvsw7Hx63Ng6BRaULp1o0D7jyRuuAnsAz5l7wOICu44Q853KCNDKGX3qVlmZ2e6YJwCeypbHe5b_INMZkRZwFF6EAdDosLR9cTwS7yKQ",
+  "payload": ""
+}
+2026-02-07 01:42:17,680:DEBUG:urllib3.connectionpool:http://127.0.0.1:8200 "POST /v1/pki_int/acme/authorization/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c HTTP/1.1" 200 1346
+2026-02-07 01:42:17,680:DEBUG:acme.client:Received response:
+HTTP 200
+Cache-Control: no-store
+Content-Type: application/json
+Link: <http://127.0.0.1:8200/v1/pki_int/acme/directory>;rel="index"
+Replay-Nonce: dmF1bHQwWKO3GvtCM0zeqWy2muoKw2E52fGacAcHPWpiTaBDlT0xSPABIdnx_g
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Date: Sat, 07 Feb 2026 00:42:17 GMT
+Content-Length: 1346
+
+{"challenges":[{"error":{"detail":"response received didn't match the challenge's requirements: error validating http-01 challenge 18a12a0b-c0c8-4ca2-b730-b8a01a5b663c-http-01: http-01: failed to fetch path http://test-acme.127.0.0.1.nip.io/.well-known/acme-challenge/90zm1IwE6_PuK56cTb_9nwgK8hwR: Get \"http://test-acme.127.0.0.1.nip.io/.well-known/acme-challenge/90zm1IwE6_PuK56cTb_9nwgK8hwR\": dial tcp: lookup test-acme.127.0.0.1.nip.io on 192.168.65.7:53: no such host; this may occur if the validation target was misconfigured: check that challenge responses are available at the required locations and retry.","status":400,"subproblems":[],"type":"urn:ietf:params:acme:error:incorrectResponse"},"status":"processing","token":"90zm1IwE6_PuK56cTb_9nwgK8hwR","type":"http-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/http-01"},{"status":"pending","token":"YoiW88OtO6jkAlKKADzqea6P8XK4","type":"dns-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/dns-01"},{"status":"pending","token":"VExK05JJyT3Fkb1U0jKUSX2DyJ2f","type":"tls-alpn-01","url":"http://127.0.0.1:8200/v1/pki_int/acme/challenge/18a12a0b-c0c8-4ca2-b730-b8a01a5b663c/tls-alpn-01"}],"identifier":{"type":"dns","value":"test-acme.127.0.0.1.nip.io"},"status":"pending","wildcard":false}
+2026-02-07 01:42:17,680:DEBUG:acme.client:Storing nonce: dmF1bHQwWKO3GvtCM0zeqWy2muoKw2E52fGacAcHPWpiTaBDlT0xSPABIdnx_g
+2026-02-07 01:42:19,629:DEBUG:certbot._internal.error_handler:Encountered exception:
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/certbot/4.2.0/libexec/lib/python3.13/site-packages/certbot/_internal/auth_handler.py", line 108, in handle_authorizations
+    self._poll_authorizations(authzrs, max_retries, max_time_mins, best_effort)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/certbot/4.2.0/libexec/lib/python3.13/site-packages/certbot/_internal/auth_handler.py", line 167, in _poll_authorizations
+    time.sleep(sleep_seconds)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^
+KeyboardInterrupt
+
+2026-02-07 01:42:19,629:DEBUG:certbot._internal.error_handler:Calling registered functions
+2026-02-07 01:42:19,629:INFO:certbot._internal.auth_handler:Cleaning up challenges
+2026-02-07 01:42:19,630:DEBUG:certbot._internal.plugins.standalone:Stopping server at :::9999...
+2026-02-07 01:42:19,661:ERROR:certbot._internal.log:Exiting due to user request.
