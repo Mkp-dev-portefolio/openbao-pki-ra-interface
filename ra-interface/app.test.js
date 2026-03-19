@@ -14,6 +14,10 @@ const {
   truncSerial,
   uid,
   parseSubject,
+  decodePEM,
+  formatDuration,
+  fuzzyMatch,
+  debounce,
 } = require('./utils');
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -406,5 +410,131 @@ describe('Discovery.filter — certificate list filtering', () => {
     // Only return expiring certs whose CN contains "meter"
     expect(filterCert(expiringCert, 'meter', 'expiring')).toBeTruthy();
     expect(filterCert(expiringCert, 'scada', 'expiring')).toBeFalsy();
+  });
+});
+
+// ════════════════════════════════════════════════════════════════════════════
+// decodePEM
+// ════════════════════════════════════════════════════════════════════════════
+describe('decodePEM', () => {
+  test('returns empty object for null', () => {
+    expect(decodePEM(null)).toEqual({});
+  });
+
+  test('returns empty object for empty string', () => {
+    expect(decodePEM('')).toEqual({});
+  });
+
+  test('extracts issuer from PEM text', () => {
+    const pem = 'issuer=CN=Energy Root CA, O=Energy Corp\nsubject=CN=device01.meter.energy.internal\n';
+    const result = decodePEM(pem);
+    expect(result.issuer).toBe('CN=Energy Root CA, O=Energy Corp');
+    expect(result.cn).toBe('device01.meter.energy.internal');
+  });
+
+  test('returns cn from subject when no issuer present', () => {
+    const pem = 'subject=CN=test.internal\n';
+    const result = decodePEM(pem);
+    expect(result.cn).toBe('test.internal');
+    expect(result.issuer).toBeUndefined();
+  });
+});
+
+// ════════════════════════════════════════════════════════════════════════════
+// formatDuration
+// ════════════════════════════════════════════════════════════════════════════
+describe('formatDuration', () => {
+  test('returns "0s" for zero', () => {
+    expect(formatDuration(0)).toBe('0s');
+  });
+
+  test('returns "0s" for negative', () => {
+    expect(formatDuration(-100)).toBe('0s');
+  });
+
+  test('returns "0s" for null', () => {
+    expect(formatDuration(null)).toBe('0s');
+  });
+
+  test('formats seconds into minutes', () => {
+    expect(formatDuration(300)).toBe('5m');
+  });
+
+  test('formats seconds into hours and minutes', () => {
+    expect(formatDuration(3661)).toBe('1h 1m');
+  });
+
+  test('formats seconds into days and hours', () => {
+    expect(formatDuration(90000)).toBe('1d 1h');
+  });
+
+  test('formats exactly one day', () => {
+    expect(formatDuration(86400)).toBe('1d 0h');
+  });
+});
+
+// ════════════════════════════════════════════════════════════════════════════
+// fuzzyMatch
+// ════════════════════════════════════════════════════════════════════════════
+describe('fuzzyMatch', () => {
+  test('returns true for empty query', () => {
+    expect(fuzzyMatch('anything', '')).toBe(true);
+  });
+
+  test('returns true for null query', () => {
+    expect(fuzzyMatch('anything', null)).toBe(true);
+  });
+
+  test('matches single term case-insensitively', () => {
+    expect(fuzzyMatch('Certificate Discovery', 'discovery')).toBe(true);
+    expect(fuzzyMatch('Certificate Discovery', 'DISCOVERY')).toBe(true);
+  });
+
+  test('matches multiple space-separated terms (AND logic)', () => {
+    expect(fuzzyMatch('Certificate Discovery Panel', 'cert panel')).toBe(true);
+    expect(fuzzyMatch('Certificate Discovery Panel', 'cert missing')).toBe(false);
+  });
+
+  test('returns false when no match', () => {
+    expect(fuzzyMatch('Hello World', 'xyz')).toBe(false);
+  });
+
+  test('handles null text gracefully', () => {
+    expect(fuzzyMatch(null, 'test')).toBe(false);
+  });
+});
+
+// ════════════════════════════════════════════════════════════════════════════
+// debounce
+// ════════════════════════════════════════════════════════════════════════════
+describe('debounce', () => {
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => jest.useRealTimers());
+
+  test('delays function execution', () => {
+    const fn = jest.fn();
+    const debounced = debounce(fn, 100);
+    debounced();
+    expect(fn).not.toHaveBeenCalled();
+    jest.advanceTimersByTime(100);
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  test('only executes once after rapid calls', () => {
+    const fn = jest.fn();
+    const debounced = debounce(fn, 100);
+    debounced();
+    debounced();
+    debounced();
+    jest.advanceTimersByTime(100);
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  test('passes arguments to the original function', () => {
+    const fn = jest.fn();
+    const debounced = debounce(fn, 50);
+    debounced('a', 'b');
+    jest.advanceTimersByTime(50);
+    expect(fn).toHaveBeenCalledWith('a', 'b');
   });
 });
