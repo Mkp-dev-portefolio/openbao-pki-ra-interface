@@ -12,6 +12,59 @@
 <!-- ─── Toast Container ──────────────────────────────── -->
 <div id="toast-container"></div>
 
+<!-- ─── Command Palette Overlay ──────────────────────── -->
+<div id="cmd-palette" class="cmd-overlay">
+  <div class="cmd-dialog">
+    <div class="cmd-header">
+      <span class="cmd-search-icon">🔍</span>
+      <input type="text" id="cmd-input" placeholder="Type a command or search…" autocomplete="off">
+      <kbd class="cmd-kbd">ESC</kbd>
+    </div>
+    <div class="cmd-list" id="cmd-list"></div>
+    <div class="cmd-footer">
+      <span><kbd>↑↓</kbd> Navigate</span>
+      <span><kbd>Enter</kbd> Execute</span>
+      <span><kbd>Esc</kbd> Close</span>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Notification Center Drawer ───────────────────── -->
+<div id="notif-center" class="notif-drawer">
+  <div class="notif-header">
+    <span style="font-weight:700;font-size:14px">Notifications</span>
+    <button class="btn btn-secondary btn-sm" onclick="Notifications.clear()">Clear All</button>
+  </div>
+  <div class="notif-list" id="notif-list"></div>
+</div>
+
+<!-- ─── Session Lock Overlay ─────────────────────────── -->
+<div id="session-lock" class="lock-overlay">
+  <div class="lock-dialog">
+    <div class="lock-icon">🔒</div>
+    <div class="lock-title">Session Locked</div>
+    <div class="lock-sub">Enter your token to unlock</div>
+    <input type="password" id="lock-pin" placeholder="Enter token or 'unlock'" onkeydown="if(event.key==='Enter')SessionLock.unlock()">
+    <button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="SessionLock.unlock()">Unlock Session</button>
+  </div>
+</div>
+
+<!-- ─── Keyboard Shortcuts Help ──────────────────────── -->
+<div id="shortcuts-help" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">Keyboard Shortcuts</h2>
+      <button class="modal-close" onclick="el('shortcuts-help').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="shortcuts-list" class="shortcuts-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Mobile Sidebar Overlay ───────────────────────── -->
+<div id="sidebar-overlay" class="sidebar-overlay"></div>
+
 <!-- ─── App Shell ────────────────────────────────────── -->
 <div class="app-shell">
 
@@ -81,11 +134,21 @@
   <div class="main">
     <!-- Topbar -->
     <div class="topbar">
+      <button class="btn-icon mobile-menu-btn" onclick="MobileSidebar.toggle()" title="Menu">☰</button>
       <div class="topbar-title-group">
         <div class="topbar-title" id="topbar-title">Dashboard</div>
         <div class="topbar-subtitle" id="topbar-sub">PKI health &amp; overview</div>
       </div>
+      <button class="cmd-trigger" onclick="CommandPalette.open()" title="Command Palette (Ctrl+K)">
+        <span>🔍 Search commands…</span>
+        <kbd>Ctrl+K</kbd>
+      </button>
       <div class="topbar-actions">
+        <button class="btn-icon" id="auto-refresh-btn" onclick="AutoRefresh.toggle(30)" title="Auto-refresh: Off">⟳</button>
+        <button class="btn-icon" id="theme-toggle-btn" onclick="ThemeToggle.toggle()" title="Toggle theme">☀</button>
+        <button class="btn-icon notif-trigger" onclick="Notifications.toggleDrawer()" title="Notifications">
+          🔔<span class="notif-badge-icon" id="notif-badge" style="display:none">0</span>
+        </button>
         <button class="btn-icon" onclick="checkConnection()" title="Refresh">↻</button>
         <button class="btn-icon" onclick="openSettings()" title="Settings">⚙</button>
       </div>
@@ -168,11 +231,21 @@
           <button class="btn btn-primary" onclick="navigate('lifecycle')">+ Issue New</button>
         </div>
 
+        <!-- Batch Operations Bar -->
+        <div id="batch-bar" class="batch-bar" style="display:none">
+          <span><strong id="batch-count">0</strong> selected</span>
+          <button class="btn btn-secondary btn-sm" onclick="BatchOps.selectAll()">Select All</button>
+          <button class="btn btn-secondary btn-sm" onclick="BatchOps.deselectAll()">Deselect All</button>
+          <button class="btn btn-secondary btn-sm" onclick="BatchOps.exportSelected()">⬇ Export CSV</button>
+          <button class="btn btn-danger btn-sm" onclick="BatchOps.revokeSelected()">⛔ Revoke Selected</button>
+        </div>
+
         <div class="card">
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
+                  <th style="width:32px"></th>
                   <th>Serial Number</th>
                   <th>Common Name</th>
                   <th>Role / Org</th>
@@ -182,7 +255,7 @@
                 </tr>
               </thead>
               <tbody id="disc-table-body">
-                <tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr>
+                <tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr>
               </tbody>
             </table>
           </div>
@@ -202,6 +275,14 @@
           <div class="tab issue-tab active" data-panel="issue" id="tab-issue" onclick="Lifecycle.switchTab('issue')">📜 Issue Certificate</div>
           <div class="tab issue-tab" data-panel="issued" id="tab-issued" onclick="Lifecycle.switchTab('issued')">📥 Last Issued</div>
           <div class="tab issue-tab" data-panel="revoke" id="tab-revoke" onclick="Lifecycle.switchTab('revoke');Lifecycle.revokePrompt()">⛔ Revoke</div>
+        </div>
+
+        <!-- PEM Drop Zone -->
+        <div id="pem-drop-zone" class="pem-drop-zone">
+          <div class="pem-drop-content">
+            <span style="font-size:32px">📄</span>
+            <div>Drop a PEM file here to auto-fill CN</div>
+          </div>
         </div>
 
         <!-- Issue Panel -->

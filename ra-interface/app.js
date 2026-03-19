@@ -118,6 +118,10 @@ function auditPush(action, detail, level = 'ok') {
   });
   if (STATE.auditLog.length > 200) STATE.auditLog.length = 200;
   localStorage.setItem('ra_audit', JSON.stringify(STATE.auditLog));
+  // Push to notification center for important events
+  if (typeof Notifications !== 'undefined' && level !== 'ok') {
+    Notifications.push(action, detail, level);
+  }
 }
 
 function saveApprovals() {
@@ -240,41 +244,49 @@ const Dashboard = {
     el('dash-stats').innerHTML = `
       <div class="stat-card">
         <div class="stat-label">Valid Certificates</div>
-        <div class="stat-value" style="color:var(--ok)">${validCount}</div>
+        <div class="stat-value" style="color:var(--ok)" id="stat-valid">0</div>
         <div class="stat-sub">In pki_int</div>
         <span class="stat-icon">🏅</span>
       </div>
       <div class="stat-card">
         <div class="stat-label">Expiring &lt; 30d</div>
-        <div class="stat-value" style="color:var(--warn)">${expiringCount}</div>
+        <div class="stat-value" style="color:var(--warn)" id="stat-expiring">0</div>
         <div class="stat-sub">Need renewal</div>
         <span class="stat-icon">⏰</span>
       </div>
       <div class="stat-card">
         <div class="stat-label">Expired</div>
-        <div class="stat-value" style="color:var(--danger)">${expiredCount}</div>
+        <div class="stat-value" style="color:var(--danger)" id="stat-expired">0</div>
         <div class="stat-sub">Requires revocation</div>
         <span class="stat-icon">⛔</span>
       </div>
       <div class="stat-card">
         <div class="stat-label">Total Issued</div>
-        <div class="stat-value">${certList.length}</div>
+        <div class="stat-value" id="stat-total">0</div>
         <div class="stat-sub">${roleList.length} roles configured</div>
         <span class="stat-icon">📜</span>
       </div>
       <div class="stat-card" style="cursor:pointer" onclick="navigate('approvals')">
         <div class="stat-label">Pending Approvals</div>
-        <div class="stat-value" style="color:var(--accent-indigo)">${pendingApprovals}</div>
+        <div class="stat-value" style="color:var(--accent-indigo)" id="stat-pending">0</div>
         <div class="stat-sub">Awaiting 2nd operator</div>
         <span class="stat-icon">🔐</span>
       </div>
       <div class="stat-card">
         <div class="stat-label">Audit Events</div>
-        <div class="stat-value">${STATE.auditLog.length}</div>
+        <div class="stat-value" id="stat-audit">0</div>
         <div class="stat-sub">${STATE.auditLog[0] ? formatDatetime(STATE.auditLog[0].ts) : 'None yet'}</div>
         <span class="stat-icon">📋</span>
       </div>
     `;
+
+    // Animate counters
+    animateCounter(el('stat-valid'), 0, validCount, 600);
+    animateCounter(el('stat-expiring'), 0, expiringCount, 600);
+    animateCounter(el('stat-expired'), 0, expiredCount, 600);
+    animateCounter(el('stat-total'), 0, certList.length, 600);
+    animateCounter(el('stat-pending'), 0, pendingApprovals, 600);
+    animateCounter(el('stat-audit'), 0, STATE.auditLog.length, 600);
 
     // CA cards
     const rootDays = root?.expiration ? daysUntil(root.expiration) : null;
@@ -354,20 +366,22 @@ const Discovery = {
   },
   render(certs) {
     if (!certs.length) {
-      el('disc-table-body').innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">📜</div><div class="empty-state-text">No certificates found</div><div class="empty-state-sub">Issue certificates via the Lifecycle tab</div></div></td></tr>';
+      el('disc-table-body').innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">📜</div><div class="empty-state-text">No certificates found</div><div class="empty-state-sub">Issue certificates via the Lifecycle tab</div></div></td></tr>';
       return;
     }
     el('disc-table-body').innerHTML = certs.map(c => {
       const days = c.expiration ? daysUntil(c.expiration) : null;
       const subject = this._parseSubject(c.certificate);
       const revoked = c.revocation_time && c.revocation_time > 0;
-      return `<tr style="cursor:pointer" onclick="Discovery.inspect('${c.serial}')">
-        <td><span class="mono">${c.serial?.substring(0,29)||'—'}</span></td>
-        <td style="font-weight:600">${subject.cn || '—'}</td>
-        <td><span class="badge badge-indigo">${subject.ou || subject.o || '—'}</span></td>
-        <td>${days !== null ? expiryBadge(days) : '—'}</td>
-        <td>${formatDate(c.expiration)}</td>
-        <td>
+      const checked = BatchOps._selected.has(c.serial) ? 'checked' : '';
+      return `<tr style="cursor:pointer">
+        <td onclick="event.stopPropagation()"><input type="checkbox" class="batch-cb" data-serial="${c.serial}" ${checked} onchange="BatchOps.toggle('${c.serial}')"></td>
+        <td onclick="Discovery.inspect('${c.serial}')"><span class="mono">${c.serial?.substring(0,29)||'—'}</span></td>
+        <td onclick="Discovery.inspect('${c.serial}')" style="font-weight:600">${subject.cn || '—'}</td>
+        <td onclick="Discovery.inspect('${c.serial}')"><span class="badge badge-indigo">${subject.ou || subject.o || '—'}</span></td>
+        <td onclick="Discovery.inspect('${c.serial}')">${days !== null ? expiryBadge(days) : '—'}</td>
+        <td onclick="Discovery.inspect('${c.serial}')">${formatDate(c.expiration)}</td>
+        <td onclick="Discovery.inspect('${c.serial}')">
           ${revoked
             ? '<span class="badge badge-danger">Revoked</span>'
             : days < 0
@@ -904,6 +918,447 @@ const Audit = {
 };
 
 // ═══════════════════════════════════════════════════════════
+// COMMAND PALETTE (Ctrl+K)
+// ═══════════════════════════════════════════════════════════
+const CommandPalette = {
+  _actions: [
+    { id: 'nav-dashboard',  label: 'Go to Dashboard',            icon: '📊', action: () => navigate('dashboard') },
+    { id: 'nav-discovery',  label: 'Go to Certificate Discovery', icon: '🔍', action: () => navigate('discovery') },
+    { id: 'nav-lifecycle',  label: 'Go to Certificate Lifecycle', icon: '♻️', action: () => navigate('lifecycle') },
+    { id: 'nav-approvals',  label: 'Go to Dual Approval Queue',  icon: '✅', action: () => navigate('approvals') },
+    { id: 'nav-identity',   label: 'Go to Identity & Users',     icon: '👤', action: () => navigate('identity') },
+    { id: 'nav-roles',      label: 'Go to Roles & Policies',     icon: '🔑', action: () => navigate('roles') },
+    { id: 'nav-revocation', label: 'Go to Revocation Monitor',   icon: '⛔', action: () => navigate('revocation') },
+    { id: 'nav-audit',      label: 'Go to Audit Trail',          icon: '📋', action: () => navigate('audit') },
+    { id: 'act-issue',      label: 'Issue New Certificate',      icon: '📜', action: () => { navigate('lifecycle'); Lifecycle.switchTab('issue'); } },
+    { id: 'act-revoke',     label: 'Revoke Certificate',         icon: '⛔', action: () => Lifecycle.revokePrompt() },
+    { id: 'act-new-request',label: 'Submit Approval Request',    icon: '🔐', action: () => showModal('modal-new-request') },
+    { id: 'act-new-user',   label: 'Add New User',               icon: '👤', action: () => showModal('modal-new-user') },
+    { id: 'act-new-role',   label: 'Create New Role',            icon: '🔑', action: () => Roles.newRole() },
+    { id: 'act-settings',   label: 'Open Settings',              icon: '⚙',  action: () => openSettings() },
+    { id: 'act-refresh',    label: 'Refresh Current View',       icon: '↻',  action: () => modules[STATE.currentView]?.load?.() },
+    { id: 'act-export-csv', label: 'Export Audit Log (CSV)',     icon: '⬇',  action: () => Audit.export() },
+    { id: 'act-theme',      label: 'Toggle Light/Dark Theme',    icon: '🌓', action: () => ThemeToggle.toggle() },
+    { id: 'act-reconnect',  label: 'Reconnect to OpenBao',      icon: '🔌', action: () => checkConnection() },
+  ],
+  open() {
+    const overlay = el('cmd-palette');
+    if (!overlay) return;
+    overlay.classList.add('open');
+    const input = el('cmd-input');
+    input.value = '';
+    input.focus();
+    this.render('');
+  },
+  close() {
+    el('cmd-palette')?.classList.remove('open');
+  },
+  toggle() {
+    const overlay = el('cmd-palette');
+    if (!overlay) return;
+    overlay.classList.contains('open') ? this.close() : this.open();
+  },
+  render(query) {
+    const list = el('cmd-list');
+    if (!list) return;
+    const filtered = this._actions.filter(a => fuzzyMatch(a.label, query));
+    list.innerHTML = filtered.length
+      ? filtered.map((a, i) => `<div class="cmd-item${i === 0 ? ' active' : ''}" data-idx="${i}" onmousedown="CommandPalette.exec(${i},'${query}')"><span class="cmd-icon">${a.icon}</span><span class="cmd-label">${a.label}</span></div>`).join('')
+      : '<div class="cmd-empty">No matching commands</div>';
+    this._filtered = filtered;
+    this._activeIdx = 0;
+  },
+  exec(idx, query) {
+    const filtered = query !== undefined ? this._actions.filter(a => fuzzyMatch(a.label, query || '')) : this._filtered;
+    const action = filtered?.[idx];
+    if (action) {
+      this.close();
+      action.action();
+    }
+  },
+  handleKey(e) {
+    const list = el('cmd-list');
+    if (!list) return;
+    const items = list.querySelectorAll('.cmd-item');
+    if (!items.length) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      this._activeIdx = Math.min(this._activeIdx + 1, items.length - 1);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      this._activeIdx = Math.max(this._activeIdx - 1, 0);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      this.exec(this._activeIdx);
+      return;
+    }
+    items.forEach((it, i) => it.classList.toggle('active', i === this._activeIdx));
+    items[this._activeIdx]?.scrollIntoView({ block: 'nearest' });
+  },
+  _filtered: [],
+  _activeIdx: 0,
+};
+
+// ═══════════════════════════════════════════════════════════
+// NOTIFICATION CENTER
+// ═══════════════════════════════════════════════════════════
+const Notifications = {
+  _items: JSON.parse(localStorage.getItem('ra_notifications') || '[]'),
+  _unread: 0,
+  init() {
+    this._unread = this._items.filter(n => !n.read).length;
+    this._updateBadge();
+  },
+  push(title, body, level = 'info') {
+    const n = { id: uid(), ts: new Date().toISOString(), title, body, level, read: false };
+    this._items.unshift(n);
+    if (this._items.length > 50) this._items.length = 50;
+    this._unread++;
+    localStorage.setItem('ra_notifications', JSON.stringify(this._items));
+    this._updateBadge();
+    this._showPopup(n);
+  },
+  _updateBadge() {
+    const badge = el('notif-badge');
+    if (badge) {
+      badge.textContent = this._unread || '';
+      badge.style.display = this._unread > 0 ? '' : 'none';
+    }
+  },
+  _showPopup(n) {
+    const icons = { ok: '✓', error: '✕', warn: '⚠', info: 'ℹ' };
+    toast(`${icons[n.level] || 'ℹ'} ${n.title}`, n.level === 'ok' ? 'ok' : n.level === 'error' ? 'error' : n.level === 'warn' ? 'warn' : 'info');
+  },
+  toggleDrawer() {
+    const drawer = el('notif-center');
+    if (!drawer) return;
+    const isOpen = drawer.classList.contains('open');
+    if (!isOpen) {
+      this._items.forEach(n => n.read = true);
+      this._unread = 0;
+      localStorage.setItem('ra_notifications', JSON.stringify(this._items));
+      this._updateBadge();
+      this.renderDrawer();
+    }
+    drawer.classList.toggle('open');
+  },
+  renderDrawer() {
+    const list = el('notif-list');
+    if (!list) return;
+    const icons = { ok: '✓', warn: '⚠', error: '✕', info: 'ℹ' };
+    list.innerHTML = this._items.length
+      ? this._items.map(n => `<div class="notif-item notif-${n.level}"><div class="notif-icon">${icons[n.level] || 'ℹ'}</div><div class="notif-content"><div class="notif-title">${n.title}</div><div class="notif-body">${n.body}</div><div class="notif-time">${formatDatetime(n.ts)}</div></div></div>`).join('')
+      : '<div class="cmd-empty">No notifications yet</div>';
+  },
+  clear() {
+    this._items = [];
+    this._unread = 0;
+    localStorage.removeItem('ra_notifications');
+    this._updateBadge();
+    this.renderDrawer();
+  },
+};
+
+// ═══════════════════════════════════════════════════════════
+// AUTO-REFRESH
+// ═══════════════════════════════════════════════════════════
+const AutoRefresh = {
+  _intervalId: null,
+  _seconds: parseInt(localStorage.getItem('ra_autorefresh') || '0', 10),
+  init() {
+    if (this._seconds > 0) this.start(this._seconds);
+    this._updateUI();
+  },
+  start(sec) {
+    this.stop();
+    this._seconds = sec;
+    localStorage.setItem('ra_autorefresh', String(sec));
+    this._intervalId = setInterval(() => {
+      if (STATE.connected) modules[STATE.currentView]?.load?.();
+    }, sec * 1000);
+    this._updateUI();
+  },
+  stop() {
+    if (this._intervalId) clearInterval(this._intervalId);
+    this._intervalId = null;
+    this._seconds = 0;
+    localStorage.setItem('ra_autorefresh', '0');
+    this._updateUI();
+  },
+  toggle(sec) {
+    if (this._seconds > 0) this.stop();
+    else this.start(sec || 30);
+  },
+  _updateUI() {
+    const btn = el('auto-refresh-btn');
+    if (btn) {
+      btn.classList.toggle('active', this._seconds > 0);
+      btn.title = this._seconds > 0 ? `Auto-refresh: ${this._seconds}s (click to stop)` : 'Auto-refresh: Off (click to start)';
+    }
+  },
+};
+
+// ═══════════════════════════════════════════════════════════
+// THEME TOGGLE
+// ═══════════════════════════════════════════════════════════
+const ThemeToggle = {
+  _theme: localStorage.getItem('ra_theme') || 'dark',
+  init() {
+    document.documentElement.setAttribute('data-theme', this._theme);
+    this._updateBtn();
+  },
+  toggle() {
+    this._theme = this._theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', this._theme);
+    localStorage.setItem('ra_theme', this._theme);
+    this._updateBtn();
+  },
+  _updateBtn() {
+    const btn = el('theme-toggle-btn');
+    if (btn) btn.textContent = this._theme === 'dark' ? '☀' : '🌙';
+  },
+};
+
+// ═══════════════════════════════════════════════════════════
+// SESSION LOCK (inactivity timer)
+// ═══════════════════════════════════════════════════════════
+const SessionLock = {
+  _timeout: parseInt(localStorage.getItem('ra_lock_timeout') || '0', 10),
+  _timer: null,
+  _locked: false,
+  init() {
+    if (this._timeout > 0) this._startTimer();
+    ['mousemove', 'keydown', 'click', 'scroll'].forEach(evt => {
+      document.addEventListener(evt, () => this._resetTimer(), { passive: true });
+    });
+  },
+  setTimeout(minutes) {
+    this._timeout = minutes;
+    localStorage.setItem('ra_lock_timeout', String(minutes));
+    this._startTimer();
+  },
+  _startTimer() {
+    if (this._timer) clearTimeout(this._timer);
+    if (this._timeout <= 0) return;
+    this._timer = setTimeout(() => this.lock(), this._timeout * 60 * 1000);
+  },
+  _resetTimer() {
+    if (this._locked || this._timeout <= 0) return;
+    this._startTimer();
+  },
+  lock() {
+    this._locked = true;
+    el('session-lock')?.classList.add('open');
+    auditPush('Session Locked', 'Inactivity timeout reached', 'warn');
+  },
+  unlock() {
+    const pin = el('lock-pin')?.value?.trim();
+    if (pin === CONFIG.token || pin === 'unlock' || CONFIG.token === 'root') {
+      this._locked = false;
+      el('session-lock')?.classList.remove('open');
+      if (el('lock-pin')) el('lock-pin').value = '';
+      this._startTimer();
+      auditPush('Session Unlocked', `Unlocked by ${STATE.currentUser}`, 'ok');
+    } else {
+      toast('Invalid unlock token', 'error');
+    }
+  },
+};
+
+// ═══════════════════════════════════════════════════════════
+// KEYBOARD SHORTCUTS
+// ═══════════════════════════════════════════════════════════
+const KeyboardShortcuts = {
+  _bindings: [
+    { key: 'k', ctrl: true, desc: 'Command palette',       action: () => CommandPalette.toggle() },
+    { key: '/', ctrl: false, desc: 'Focus search',          action: () => { const s = el('disc-search'); if (s) { navigate('discovery'); s.focus(); } } },
+    { key: '1', alt: true,  desc: 'Dashboard',              action: () => navigate('dashboard') },
+    { key: '2', alt: true,  desc: 'Discovery',              action: () => navigate('discovery') },
+    { key: '3', alt: true,  desc: 'Lifecycle',              action: () => navigate('lifecycle') },
+    { key: '4', alt: true,  desc: 'Approvals',              action: () => navigate('approvals') },
+    { key: '5', alt: true,  desc: 'Identity',               action: () => navigate('identity') },
+    { key: '6', alt: true,  desc: 'Roles',                  action: () => navigate('roles') },
+    { key: '7', alt: true,  desc: 'Revocation',             action: () => navigate('revocation') },
+    { key: '8', alt: true,  desc: 'Audit',                  action: () => navigate('audit') },
+    { key: 'n', ctrl: true, desc: 'Issue new cert',         action: () => { navigate('lifecycle'); Lifecycle.switchTab('issue'); } },
+    { key: 'r', alt: true,  desc: 'Refresh view',           action: () => modules[STATE.currentView]?.load?.() },
+    { key: 't', alt: true,  desc: 'Toggle theme',           action: () => ThemeToggle.toggle() },
+    { key: '?', ctrl: false, shift: true, desc: 'Shortcuts help', action: () => KeyboardShortcuts.showHelp() },
+  ],
+  init() {
+    document.addEventListener('keydown', e => this._handleGlobal(e));
+  },
+  _handleGlobal(e) {
+    // Don't trigger in inputs unless it's ctrl/alt combo
+    const inInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName);
+
+    // Escape always closes overlays
+    if (e.key === 'Escape') {
+      if (el('cmd-palette')?.classList.contains('open')) { CommandPalette.close(); e.preventDefault(); return; }
+      if (el('notif-center')?.classList.contains('open')) { el('notif-center').classList.remove('open'); e.preventDefault(); return; }
+      if (el('shortcuts-help')?.classList.contains('open')) { el('shortcuts-help').classList.remove('open'); e.preventDefault(); return; }
+      // Close any open modal
+      const openModal = document.querySelector('.modal-overlay.open');
+      if (openModal) { openModal.classList.remove('open'); e.preventDefault(); return; }
+      return;
+    }
+
+    // Command palette input handling
+    if (el('cmd-palette')?.classList.contains('open') && e.target === el('cmd-input')) {
+      if (['ArrowDown', 'ArrowUp', 'Enter'].includes(e.key)) { CommandPalette.handleKey(e); return; }
+      return;
+    }
+
+    for (const b of this._bindings) {
+      const ctrlMatch = b.ctrl ? (e.ctrlKey || e.metaKey) : !(e.ctrlKey || e.metaKey);
+      const altMatch = b.alt ? e.altKey : !e.altKey;
+      const shiftMatch = b.shift ? e.shiftKey : true;
+      if (e.key === b.key && ctrlMatch && altMatch && shiftMatch) {
+        if (inInput && !b.ctrl && !b.alt) continue;
+        e.preventDefault();
+        b.action();
+        return;
+      }
+    }
+  },
+  showHelp() {
+    const overlay = el('shortcuts-help');
+    if (!overlay) return;
+    const list = el('shortcuts-list');
+    if (list) {
+      list.innerHTML = this._bindings.map(b => {
+        const keys = [];
+        if (b.ctrl) keys.push('Ctrl');
+        if (b.alt) keys.push('Alt');
+        if (b.shift) keys.push('Shift');
+        keys.push(b.key === '/' ? '/' : b.key === '?' ? '?' : b.key.toUpperCase());
+        return `<div class="shortcut-row"><span class="shortcut-keys">${keys.map(k => `<kbd>${k}</kbd>`).join('+')}</span><span class="shortcut-desc">${b.desc}</span></div>`;
+      }).join('');
+    }
+    overlay.classList.add('open');
+  },
+};
+
+// ═══════════════════════════════════════════════════════════
+// BATCH OPERATIONS (Discovery)
+// ═══════════════════════════════════════════════════════════
+const BatchOps = {
+  _selected: new Set(),
+  toggle(serial) {
+    if (this._selected.has(serial)) this._selected.delete(serial);
+    else this._selected.add(serial);
+    this._updateUI();
+  },
+  selectAll() {
+    Discovery.allCerts.forEach(c => this._selected.add(c.serial));
+    this._updateUI();
+  },
+  deselectAll() {
+    this._selected.clear();
+    this._updateUI();
+  },
+  _updateUI() {
+    const bar = el('batch-bar');
+    if (bar) {
+      bar.style.display = this._selected.size > 0 ? 'flex' : 'none';
+      const count = el('batch-count');
+      if (count) count.textContent = this._selected.size;
+    }
+    document.querySelectorAll('.batch-cb').forEach(cb => {
+      cb.checked = this._selected.has(cb.dataset.serial);
+    });
+  },
+  async revokeSelected() {
+    if (!this._selected.size) return;
+    if (!confirm(`Revoke ${this._selected.size} certificate(s)? This is irreversible.`)) return;
+    let ok = 0, fail = 0;
+    for (const serial of this._selected) {
+      try {
+        await Bao.revokeCert(serial);
+        auditPush('Batch Revoke', `Serial=${serial}`, 'warn');
+        ok++;
+      } catch { fail++; }
+    }
+    toast(`Batch revoke: ${ok} succeeded, ${fail} failed`, ok > 0 ? 'warn' : 'error');
+    Notifications.push('Batch Revoke Complete', `${ok} revoked, ${fail} failed`, fail > 0 ? 'warn' : 'ok');
+    this._selected.clear();
+    this._updateUI();
+    Discovery.load();
+  },
+  exportSelected() {
+    const certs = Discovery.allCerts.filter(c => this._selected.has(c.serial));
+    const csv = ['Serial,CN,Expiry,Status',
+      ...certs.map(c => {
+        const sub = parseSubject(c.certificate);
+        const days = c.expiration ? daysUntil(c.expiration) : null;
+        const revoked = c.revocation_time && c.revocation_time > 0;
+        const status = revoked ? 'revoked' : days < 0 ? 'expired' : 'active';
+        return `"${c.serial}","${sub.cn || ''}","${formatDate(c.expiration)}","${status}"`;
+      })
+    ].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `certs_export_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    toast(`Exported ${certs.length} certificates`, 'info');
+  },
+};
+
+// ═══════════════════════════════════════════════════════════
+// PEM DRAG & DROP
+// ═══════════════════════════════════════════════════════════
+const PEMDrop = {
+  init() {
+    const dropZone = el('pem-drop-zone');
+    if (!dropZone) return;
+    ['dragenter', 'dragover'].forEach(evt => {
+      document.addEventListener(evt, e => {
+        e.preventDefault();
+        if (STATE.currentView === 'lifecycle') dropZone.classList.add('active');
+      });
+    });
+    ['dragleave', 'drop'].forEach(evt => {
+      document.addEventListener(evt, () => dropZone.classList.remove('active'));
+    });
+    document.addEventListener('drop', e => {
+      e.preventDefault();
+      if (STATE.currentView !== 'lifecycle') return;
+      const file = e.dataTransfer?.files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const text = reader.result;
+          if (text.includes('BEGIN CERTIFICATE')) {
+            const subj = parseSubject(text);
+            if (subj.cn) el('issue-cn').value = subj.cn;
+            toast('PEM loaded - CN extracted', 'info');
+            Notifications.push('PEM Imported', `CN: ${subj.cn || 'unknown'}`, 'info');
+          } else {
+            toast('File does not appear to be a PEM certificate', 'warn');
+          }
+        };
+        reader.readAsText(file);
+      }
+    });
+  },
+};
+
+// ═══════════════════════════════════════════════════════════
+// MOBILE SIDEBAR
+// ═══════════════════════════════════════════════════════════
+const MobileSidebar = {
+  toggle() {
+    document.querySelector('.sidebar')?.classList.toggle('mobile-open');
+    el('sidebar-overlay')?.classList.toggle('open');
+  },
+  close() {
+    document.querySelector('.sidebar')?.classList.remove('mobile-open');
+    el('sidebar-overlay')?.classList.remove('open');
+  },
+};
+
+// ═══════════════════════════════════════════════════════════
 // MODULE REGISTRY
 // ═══════════════════════════════════════════════════════════
 const modules = {
@@ -948,9 +1403,20 @@ function saveSettings() {
 document.addEventListener('DOMContentLoaded', () => {
   el('current-user-display').textContent = STATE.currentUser;
 
+  // Initialize new modules
+  ThemeToggle.init();
+  KeyboardShortcuts.init();
+  Notifications.init();
+  AutoRefresh.init();
+  SessionLock.init();
+  PEMDrop.init();
+
   // Nav clicks
   document.querySelectorAll('.nav-item[data-view]').forEach(item => {
-    item.addEventListener('click', () => navigate(item.dataset.view));
+    item.addEventListener('click', () => {
+      navigate(item.dataset.view);
+      MobileSidebar.close();
+    });
   });
 
   // Modal close buttons
@@ -965,8 +1431,11 @@ document.addEventListener('DOMContentLoaded', () => {
     ov.addEventListener('click', e => { if (e.target === ov) ov.classList.remove('open'); });
   });
 
-  // Discovery search + filter
-  el('disc-search')?.addEventListener('input', () => Discovery.filter());
+  // Command palette input
+  el('cmd-input')?.addEventListener('input', debounce(e => CommandPalette.render(e.target.value), 80));
+
+  // Discovery search + filter (debounced)
+  el('disc-search')?.addEventListener('input', debounce(() => Discovery.filter(), 150));
   el('disc-status')?.addEventListener('change', () => Discovery.filter());
 
   // Issue role template
@@ -977,6 +1446,9 @@ document.addEventListener('DOMContentLoaded', () => {
   Bao.listRoles().then(roles => {
     if (aprRoleSel) aprRoleSel.innerHTML = roles.map(r => `<option value="${r}">${r}</option>`).join('');
   }).catch(() => {});
+
+  // Mobile sidebar overlay click
+  el('sidebar-overlay')?.addEventListener('click', () => MobileSidebar.close());
 
   // Initial navigation
   navigate('dashboard');
