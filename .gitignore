@@ -10,27 +10,31 @@ __pycache__/
 coverage.xml
 
 # ── NEVER COMMIT THESE ──────────────────────────────────────────────────────
-# Private keys and certificates (any format)
+# Private key files — blocked globally regardless of location
 *.key
-*.pem
+
+# Binary containers that embed private keys
 *.p12
 *.pfx
 *.jks
-*.der
 
-# Certificate output files from issuance scripts
+# *.pem is NOT blocked globally because PEM can legitimately contain
+# public CA chains and trust anchors. The dangerous directories are
+# blocked explicitly below instead.
+
+# Certbot account directories contain RSA account private keys in JWK form
+certbot/config/accounts/
+
+# Offline HSM ceremony output contains the Root CA private key
+offline_hsm/
+
+# Certificate issuance output from scripts (contain issued-cert private keys)
 *_cert.json
 blue_cert.json
 scada_cert.json
 meter_cert.json
 user_cert.json
 
-# Certbot account keys and configs (contain RSA private keys)
-certbot/config/accounts/
-
-# Offline HSM ceremony output (contains CA private key)
-offline_hsm/
-
-# Other generated output from scripts
+# Other generated output
 monitoring_reports/
 revocation.crl

@@ -216,8 +216,8 @@ describe('uid', () => {
 
   test('generates unique IDs across multiple calls', () => {
     const ids = new Set(Array.from({ length: 200 }, () => uid()));
-    // Very unlikely to have collisions in 200 8-char base-36 IDs
-    expect(ids.size).toBeGreaterThan(195);
+    // base-36^8 ≈ 2.8 trillion possible values — zero collisions expected
+    expect(ids.size).toBe(200);
   });
 });
 
@@ -279,6 +279,13 @@ describe('parseSubject', () => {
     expect(result.ou).toBeUndefined();
     expect(result.o).toBeUndefined();
   });
+
+  test('ignores malformed RDN tokens with no equals sign', () => {
+    // Covers the `if (eq === -1) return` branch in parseSubject
+    const pem = 'subject=NOEQUALSSIGN, CN=test.energy.internal\n';
+    const result = parseSubject(pem);
+    expect(result.cn).toBe('test.energy.internal');
+  });
 });
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -318,8 +325,9 @@ describe('Approvals — self-approval prevention logic', () => {
 describe('Discovery.filter — certificate list filtering', () => {
   /**
    * Standalone re-implementation of the filter predicate from Discovery.filter().
-   * Kept in sync with app.js; if the production code changes this logic,
-   * these tests will catch the divergence.
+   * WARNING: this is a copy of the production logic, NOT an import. If
+   * Discovery.filter() in app.js changes, this function must be updated
+   * manually — these tests validate the copy, not the original.
    */
   function filterCert(cert, query, statusFilter) {
     const sub = parseSubject(cert.certificate);
