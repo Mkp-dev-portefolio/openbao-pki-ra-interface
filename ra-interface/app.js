@@ -6,7 +6,7 @@
 // ═══════════════════════════════════════════════════════════
 const CONFIG = {
   addr:  localStorage.getItem('bao_addr')  || 'http://127.0.0.1:8200',
-  token: localStorage.getItem('bao_token') || 'root',
+  token: localStorage.getItem('bao_token') || '',
   mount: localStorage.getItem('bao_mount') || 'pki_int',
   mountRoot: localStorage.getItem('bao_mount_root') || 'pki_root',
 };
@@ -59,8 +59,10 @@ const Bao = {
   async issueCert(role, payload) {
     return (await Bao.post(`${CONFIG.mount}/issue/${role}`, payload)).data;
   },
-  async revokeCert(serial_number) {
-    return (await Bao.post(`${CONFIG.mount}/revoke`, { serial_number })).data;
+  async revokeCert(serial_number, reason) {
+    const body = { serial_number };
+    if (reason) body.reason = reason;
+    return (await Bao.post(`${CONFIG.mount}/revoke`, body)).data;
   },
   async listRoles() {
     try { return (await Bao.list(`${CONFIG.mount}/roles`)).data?.keys || []; }
@@ -110,6 +112,9 @@ const Bao = {
 // ═══════════════════════════════════════════════════════════
 // UTILS  (pure helpers live in utils.js — loaded before this file)
 // ═══════════════════════════════════════════════════════════
+function escHtml(s) {
+  return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
 
 function auditPush(action, detail, level = 'ok') {
   STATE.auditLog.unshift({
@@ -128,7 +133,12 @@ function toast(msg, type = 'ok') {
   const icons = { ok: '✓', error: '✕', warn: '⚠', info: 'ℹ' };
   const el = document.createElement('div');
   el.className = `toast toast-${type}`;
-  el.innerHTML = `<span>${icons[type]}</span><span>${msg}</span>`;
+  const iconSpan = document.createElement('span');
+  const msgSpan = document.createElement('span');
+  iconSpan.textContent = icons[type];
+  msgSpan.textContent = msg;
+  el.appendChild(iconSpan);
+  el.appendChild(msgSpan);
   document.getElementById('toast-container').appendChild(el);
   setTimeout(() => el.remove(), 4000);
 }
@@ -217,22 +227,21 @@ const Dashboard = {
     let validCount = 0, expiringCount = 0, expiredCount = 0;
     const certDetails = [];
 
-    for (const serial of certList.slice(0, 40)) {
-      try {
-        const c = await Bao.readCert(serial);
-        if (c?.certificate) {
-          const pem = c.certificate;
-          // expiration from OpenBao response
-          const expTs = c.expiration;
-          if (expTs) {
-            const d = daysUntil(expTs);
-            certDetails.push({ serial, days: d });
-            if (d < 0) expiredCount++;
-            else if (d < 30) expiringCount++;
-            else validCount++;
-          }
+    const dashSlice = certList.slice(0, 40);
+    const dashResults = await Promise.allSettled(dashSlice.map(s => Bao.readCert(s)));
+    for (const [i, result] of dashResults.entries()) {
+      if (result.status !== 'fulfilled') continue;
+      const c = result.value;
+      if (c?.certificate) {
+        const expTs = c.expiration;
+        if (expTs) {
+          const d = daysUntil(expTs);
+          certDetails.push({ serial: dashSlice[i], days: d });
+          if (d < 0) expiredCount++;
+          else if (d < 30) expiringCount++;
+          else validCount++;
         }
-      } catch {}
+      }
     }
 
     const pendingApprovals = STATE.approvals.filter(a => a.status === 'pending').length;
@@ -323,11 +332,11 @@ const Dashboard = {
     // Recent audit
     el('dash-audit').innerHTML = STATE.auditLog.slice(0, 5).map(e => `
       <div class="timeline-item">
-        <div class="timeline-dot ${e.level}">${{ok:'✓',warn:'⚠',danger:'✕',info:'ℹ'}[e.level]||'•'}</div>
+        <div class="timeline-dot ${escHtml(e.level)}">${{ok:'✓',warn:'⚠',danger:'✕',info:'ℹ'}[e.level]||'•'}</div>
         <div class="timeline-content">
-          <div class="timeline-title">${e.action}</div>
-          <div class="timeline-time">${formatDatetime(e.ts)} · ${e.user}</div>
-          <div class="timeline-detail">${e.detail}</div>
+          <div class="timeline-title">${escHtml(e.action)}</div>
+          <div class="timeline-time">${escHtml(formatDatetime(e.ts))} · ${escHtml(e.user)}</div>
+          <div class="timeline-detail">${escHtml(e.detail)}</div>
         </div>
       </div>
     `).join('') || '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-text">No events yet</div></div>';
@@ -342,12 +351,12 @@ const Discovery = {
   async load() {
     el('disc-table-body').innerHTML = '<tr><td colspan="6"><div class="loading"><div class="spinner"></div> Fetching certificates…</div></td></tr>';
     const serials = await Bao.listCerts();
+    const results = await Promise.allSettled(serials.map(s => Bao.readCert(s)));
     const details = [];
-    for (const serial of serials) {
-      try {
-        const c = await Bao.readCert(serial);
-        if (c) details.push({ serial, ...c });
-      } catch {}
+    for (const [i, result] of results.entries()) {
+      if (result.status === 'fulfilled' && result.value) {
+        details.push({ serial: serials[i], ...result.value });
+      }
     }
     this.allCerts = details;
     this.render(details);
@@ -361,16 +370,16 @@ const Discovery = {
       const days = c.expiration ? daysUntil(c.expiration) : null;
       const subject = this._parseSubject(c.certificate);
       const revoked = c.revocation_time && c.revocation_time > 0;
-      return `<tr style="cursor:pointer" onclick="Discovery.inspect('${c.serial}')">
-        <td><span class="mono">${c.serial?.substring(0,29)||'—'}</span></td>
-        <td style="font-weight:600">${subject.cn || '—'}</td>
-        <td><span class="badge badge-indigo">${subject.ou || subject.o || '—'}</span></td>
+      return `<tr style="cursor:pointer" onclick="Discovery.inspect(${JSON.stringify(c.serial)})">
+        <td><span class="mono">${escHtml(c.serial?.substring(0,29)||'—')}</span></td>
+        <td style="font-weight:600">${escHtml(subject.cn || '—')}</td>
+        <td><span class="badge badge-indigo">${escHtml(subject.ou || subject.o || '—')}</span></td>
         <td>${days !== null ? expiryBadge(days) : '—'}</td>
         <td>${formatDate(c.expiration)}</td>
         <td>
           ${revoked
             ? '<span class="badge badge-danger">Revoked</span>'
-            : days < 0
+            : days !== null && days < 0
               ? '<span class="badge badge-muted">Expired</span>'
               : '<span class="badge badge-ok">Active</span>'}
         </td>
@@ -408,7 +417,7 @@ const Discovery = {
       el('inspect-body').innerHTML = `
         <div class="form-group">
           <label>Status</label>
-          <div style="margin-top:4px">${revoked ? '<span class="badge badge-danger">Revoked</span>' : days < 0 ? '<span class="badge badge-muted">Expired</span>' : '<span class="badge badge-ok">Active</span>'}</div>
+          <div style="margin-top:4px">${revoked ? '<span class="badge badge-danger">Revoked</span>' : days !== null && days < 0 ? '<span class="badge badge-muted">Expired</span>' : '<span class="badge badge-ok">Active</span>'}</div>
         </div>
         <div class="form-row">
           <div class="form-group"><label>Expires</label><input type="text" readonly value="${formatDate(c.expiration)}"></div>
@@ -416,13 +425,13 @@ const Discovery = {
         </div>
         ${revoked ? `<div class="form-group"><label>Revoked at</label><input type="text" readonly value="${formatDatetime(c.revocation_time * 1000)}"></div>` : ''}
         <div class="form-group">
-          <label>Certificate PEM <button class="copy-btn" onclick="copyText(\`${serial}\`)">⎘ Copy serial</button></label>
-          <div class="code-block">${c.certificate || '—'}</div>
+          <label>Certificate PEM <button class="copy-btn" onclick="copyText(${JSON.stringify(serial)})">⎘ Copy serial</button></label>
+          <div class="code-block">${escHtml(c.certificate || '—')}</div>
         </div>
-        ${!revoked && days >= 0 ? `<button class="btn btn-danger" style="width:100%" onclick="Lifecycle.revokePrompt('${serial}');hideModal('modal-inspect')">⛔ Revoke this certificate</button>` : ''}
+        ${!revoked && days !== null && days >= 0 ? `<button class="btn btn-danger" style="width:100%" onclick="Lifecycle.revokePrompt(${JSON.stringify(serial)});hideModal('modal-inspect')">⛔ Revoke this certificate</button>` : ''}
       `;
     } catch(e) {
-      el('inspect-body').innerHTML = `<div class="empty-state"><div class="empty-state-icon">⛔</div><div class="empty-state-text">${e.message}</div></div>`;
+      el('inspect-body').innerHTML = `<div class="empty-state"><div class="empty-state-icon">⛔</div><div class="empty-state-text">${escHtml(e.message)}</div></div>`;
     }
   },
 };
@@ -485,7 +494,7 @@ const Lifecycle = {
 
     el('btn-revoke-confirm').disabled = true;
     try {
-      await Bao.revokeCert(serial);
+      await Bao.revokeCert(serial, reason || undefined);
       auditPush('Certificate Revoked', `Serial=${serial} Reason=${reason}`, 'warn');
       hideModal('modal-revoke');
       toast(`Certificate revoked: ${serial}`, 'warn');
@@ -533,28 +542,28 @@ const Approvals = {
     }[a.status] || '';
 
     return `
-    <div class="approval-item ${statusClass}" id="approval-${a.id}">
+    <div class="approval-item ${statusClass}" id="approval-${escHtml(a.id)}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
         <div>
-          <div style="font-weight:700;font-size:14px">${a.cn}</div>
-          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Role: <strong>${a.role}</strong> · TTL: ${a.ttl}</div>
+          <div style="font-weight:700;font-size:14px">${escHtml(a.cn)}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Role: <strong>${escHtml(a.role)}</strong> · TTL: ${escHtml(a.ttl)}</div>
         </div>
         ${statusBadge}
       </div>
       <div class="approval-meta">
-        <span>📋 ID: <strong>${a.id}</strong></span>
-        <span>👤 Requested by: <strong>${a.requestedBy}</strong></span>
-        <span>🕐 ${formatDatetime(a.ts)}</span>
-        ${a.approvedBy ? `<span>✓ Approved by: <strong>${a.approvedBy}</strong></span>` : ''}
-        ${a.rationale ? `<span>📝 ${a.rationale}</span>` : ''}
+        <span>📋 ID: <strong>${escHtml(a.id)}</strong></span>
+        <span>👤 Requested by: <strong>${escHtml(a.requestedBy)}</strong></span>
+        <span>🕐 ${escHtml(formatDatetime(a.ts))}</span>
+        ${a.approvedBy ? `<span>✓ Approved by: <strong>${escHtml(a.approvedBy)}</strong></span>` : ''}
+        ${a.rationale ? `<span>📝 ${escHtml(a.rationale)}</span>` : ''}
       </div>
       ${!isResolved && !myRequest ? `
       <div style="margin-top:12px;display:flex;gap:8px">
-        <button class="btn btn-ok btn-sm" onclick="Approvals.approve('${a.id}')">✓ Approve & Issue</button>
-        <button class="btn btn-danger btn-sm" onclick="Approvals.reject('${a.id}')">✕ Reject</button>
+        <button class="btn btn-ok btn-sm" onclick="Approvals.approve(${JSON.stringify(a.id)})">✓ Approve & Issue</button>
+        <button class="btn btn-danger btn-sm" onclick="Approvals.reject(${JSON.stringify(a.id)})">✕ Reject</button>
       </div>` : ''}
       ${!isResolved && myRequest ? `<div style="margin-top:10px;font-size:12px;color:var(--text-muted)">⏳ Awaiting second operator approval — you cannot self-approve</div>` : ''}
-      ${a.issuedSerial ? `<div style="margin-top:10px"><span class="badge badge-ok">Serial: ${a.issuedSerial}</span></div>` : ''}
+      ${a.issuedSerial ? `<div style="margin-top:10px"><span class="badge badge-ok">Serial: ${escHtml(a.issuedSerial)}</span></div>` : ''}
     </div>`;
   },
   submit() {
@@ -631,18 +640,18 @@ const Identity = {
     }
 
     el('identity-list').innerHTML = userList.map(u => {
-      const initials = u.substring(0, 2).toUpperCase();
+      const initials = escHtml(u.substring(0, 2).toUpperCase());
       const colorClass = u.includes('admin') ? 'avatar-indigo' : u.includes('team') ? 'avatar-orange' : 'avatar-cyan';
       return `
       <div class="user-row" style="border-bottom:1px solid var(--border);border-radius:0">
         <div class="avatar ${colorClass}">${initials}</div>
         <div style="flex:1">
-          <div class="user-name">${u}</div>
+          <div class="user-name">${escHtml(u)}</div>
           <div class="user-meta">userpass authentication</div>
         </div>
         <div style="display:flex;gap:6px">
-          <button class="btn btn-secondary btn-sm" onclick="Identity.viewUser('${u}')">View</button>
-          <button class="btn btn-danger btn-sm" onclick="Identity.deleteUser('${u}')">✕</button>
+          <button class="btn btn-secondary btn-sm" onclick="Identity.viewUser(${JSON.stringify(u)})">View</button>
+          <button class="btn btn-danger btn-sm" onclick="Identity.deleteUser(${JSON.stringify(u)})">✕</button>
         </div>
       </div>`;
     }).join('');
@@ -661,16 +670,16 @@ const Identity = {
       <div class="form-group">
         <label>Policies</label>
         <div style="margin-top:6px;flex-wrap:wrap;display:flex;gap:4px">
-          ${pols.length ? pols.map(p => `<span class="role-pill">🔑 ${p}</span>`).join('') : '<span class="badge badge-muted">None (beyond default)</span>'}
+          ${pols.length ? pols.map(p => `<span class="role-pill">🔑 ${escHtml(p)}</span>`).join('') : '<span class="badge badge-muted">None (beyond default)</span>'}
         </div>
       </div>
       <div class="form-group">
         <label>Token Period</label>
-        <input type="text" readonly value="${u.token_period || 'none'}">
+        <input type="text" readonly value="${escHtml(u.token_period || 'none')}">
       </div>
       <div class="form-group">
         <label>Max TTL</label>
-        <input type="text" readonly value="${u.token_max_ttl || 'system default'}">
+        <input type="text" readonly value="${escHtml(u.token_max_ttl || 'system default')}">
       </div>
       <div class="divider"></div>
       <div style="font-size:12px;color:var(--text-muted)">
@@ -726,17 +735,17 @@ const Roles = {
         return `
         <div class="card" style="margin-bottom:10px">
           <div class="card-header">
-            <div class="card-title">🔑 ${name}</div>
+            <div class="card-title">🔑 ${escHtml(name)}</div>
             <div style="display:flex;gap:6px">
-              <button class="btn btn-secondary btn-sm" onclick="Roles.editRole('${name}')">Edit</button>
-              <button class="btn btn-danger btn-sm" onclick="Roles.deleteRole('${name}')">Delete</button>
+              <button class="btn btn-secondary btn-sm" onclick="Roles.editRole(${JSON.stringify(name)})">Edit</button>
+              <button class="btn btn-danger btn-sm" onclick="Roles.deleteRole(${JSON.stringify(name)})">Delete</button>
             </div>
           </div>
           <div class="card-body">
             <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;font-size:12px">
-              <div><span style="color:var(--text-muted)">Allowed Domains</span><br><strong>${r.allowed_domains?.join(', ') || '—'}</strong></div>
-              <div><span style="color:var(--text-muted)">Max TTL</span><br><strong>${r.max_ttl || r.ttl || '—'}</strong></div>
-              <div><span style="color:var(--text-muted)">Key Type</span><br><strong>${r.key_type || 'rsa'} ${r.key_bits || 2048}</strong></div>
+              <div><span style="color:var(--text-muted)">Allowed Domains</span><br><strong>${escHtml(r.allowed_domains?.join(', ') || '—')}</strong></div>
+              <div><span style="color:var(--text-muted)">Max TTL</span><br><strong>${escHtml(r.max_ttl || r.ttl || '—')}</strong></div>
+              <div><span style="color:var(--text-muted)">Key Type</span><br><strong>${escHtml(r.key_type || 'rsa')} ${r.key_bits || 2048}</strong></div>
               <div><span style="color:var(--text-muted)">Client Auth</span><br><strong>${r.client_flag ? '✓ Yes' : '✕ No'}</strong></div>
               <div><span style="color:var(--text-muted)">Server Auth</span><br><strong>${r.server_flag ? '✓ Yes' : '✕ No'}</strong></div>
               <div><span style="color:var(--text-muted)">Subdomains</span><br><strong>${r.allow_subdomains ? '✓ Yes' : '✕ No'}</strong></div>
@@ -745,7 +754,7 @@ const Roles = {
         </div>`;
       }).join('');
     } catch(e) {
-      el('roles-list').innerHTML = `<div class="empty-state"><div class="empty-state-icon">⛔</div><div class="empty-state-text">${e.message}</div></div>`;
+      el('roles-list').innerHTML = `<div class="empty-state"><div class="empty-state-icon">⛔</div><div class="empty-state-text">${escHtml(e.message)}</div></div>`;
     }
   },
   async editRole(name) {
@@ -838,22 +847,23 @@ const Revocation = {
 
     // Revoked certs
     const serials = await Bao.listCerts();
+    const revocSlice = serials.slice(0, 50);
+    const revocResults = await Promise.allSettled(revocSlice.map(s => Bao.readCert(s)));
     const revoked = [];
-    for (const s of serials.slice(0, 50)) {
-      try {
-        const c = await Bao.readCert(s);
-        if (c?.revocation_time && c.revocation_time > 0) {
-          revoked.push({ serial: s, ts: c.revocation_time });
-        }
-      } catch {}
+    for (const [i, result] of revocResults.entries()) {
+      if (result.status !== 'fulfilled') continue;
+      const c = result.value;
+      if (c?.revocation_time && c.revocation_time > 0) {
+        revoked.push({ serial: revocSlice[i], ts: c.revocation_time });
+      }
     }
 
     el('revoc-list').innerHTML = !revoked.length
       ? `<div class="empty-state"><div class="empty-state-icon">✅</div><div class="empty-state-text">No revoked certificates found</div></div>`
       : `<table><thead><tr><th>Serial</th><th>Revoked At</th><th></th></tr></thead><tbody>
           ${revoked.map(r => `<tr>
-            <td><span class="mono">${r.serial}</span></td>
-            <td>${formatDatetime(r.ts * 1000)}</td>
+            <td><span class="mono">${escHtml(r.serial)}</span></td>
+            <td>${escHtml(formatDatetime(r.ts * 1000))}</td>
             <td><span class="badge badge-danger">Revoked</span></td>
           </tr>`).join('')}
         </tbody></table>`;
@@ -871,16 +881,17 @@ const Audit = {
       return;
     }
     const icons = { ok: '✓', warn: '⚠', danger: '✕', info: 'ℹ' };
+    const safeLevel = l => ['ok','warn','danger','info'].includes(l) ? l : 'info';
     el('audit-timeline').innerHTML = log.map(e => `
       <div class="timeline-item">
-        <div class="timeline-dot ${e.level}">${icons[e.level]||'•'}</div>
+        <div class="timeline-dot ${safeLevel(e.level)}">${icons[e.level]||'•'}</div>
         <div class="timeline-content">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-            <div class="timeline-title">${e.action}</div>
-            <span class="badge badge-${e.level==='ok'?'ok':e.level==='warn'?'warn':e.level==='danger'?'danger':'info'}">${e.id}</span>
+            <div class="timeline-title">${escHtml(e.action)}</div>
+            <span class="badge badge-${safeLevel(e.level)}">${escHtml(e.id)}</span>
           </div>
-          <div class="timeline-time">🕐 ${formatDatetime(e.ts)} · 👤 ${e.user}</div>
-          <div class="timeline-detail">${e.detail}</div>
+          <div class="timeline-time">🕐 ${escHtml(formatDatetime(e.ts))} · 👤 ${escHtml(e.user)}</div>
+          <div class="timeline-detail">${escHtml(e.detail)}</div>
         </div>
       </div>
     `).join('');
@@ -892,8 +903,9 @@ const Audit = {
     this.load();
   },
   export() {
+    const csvEsc = s => `"${String(s ?? '').replace(/"/g, '""')}"`;
     const csv = ['Timestamp,User,Action,Detail,Level',
-      ...STATE.auditLog.map(e => `"${e.ts}","${e.user}","${e.action}","${e.detail}","${e.level}"`)
+      ...STATE.auditLog.map(e => [csvEsc(e.ts), csvEsc(e.user), csvEsc(e.action), csvEsc(e.detail), csvEsc(e.level)].join(','))
     ].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const a = document.createElement('a');

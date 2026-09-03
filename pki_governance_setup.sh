@@ -1,10 +1,11 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
 # Configuration
 export BAO_ADDR=${BAO_ADDR:-"http://127.0.0.1:8200"}
 export BAO_TOKEN=${BAO_TOKEN:-"root"}
-BINARY="/opt/homebrew/bin/bao"
+BAO_BIN="${BAO_BIN:-$(command -v bao 2>/dev/null || echo /opt/homebrew/bin/bao)}"
+BINARY="$BAO_BIN"
 
 echo "Using OpenBao at $BAO_ADDR"
 
@@ -67,15 +68,17 @@ path "pki_int/issue/team-red" {
 EOF
 
 # 4. Create RA Admin User
-echo "--> Creating user 'ra-operator' (password: ra-secret)..."
+: "${RA_OPERATOR_PASSWORD:?ERROR: RA_OPERATOR_PASSWORD env var must be set}"
+echo "--> Creating user 'ra-operator'..."
 $BINARY write auth/userpass/users/ra-operator \
-    password="ra-secret" \
+    password="${RA_OPERATOR_PASSWORD}" \
     policies="ra-admin-policy"
 
 # 5. Create Team Red User (Simulating an onboarded team lead)
-echo "--> Creating user 'team-red-lead' (password: red-secret)..."
+: "${TEAM_RED_PASSWORD:?ERROR: TEAM_RED_PASSWORD env var must be set}"
+echo "--> Creating user 'team-red-lead'..."
 $BINARY write auth/userpass/users/team-red-lead \
-    password="red-secret" \
+    password="${TEAM_RED_PASSWORD}" \
     policies="team-red-policy"
 
 echo "--> Governance Setup Complete!"

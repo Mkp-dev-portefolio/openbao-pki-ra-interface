@@ -134,8 +134,7 @@ jobs:
       - name: Start OpenBao dev server
         run: |
           bao server -dev -dev-root-token-id=root &
-          sleep 3
-          bao status
+          until bao status >/dev/null 2>&1; do sleep 1; done
         env:
           BAO_ADDR: http://127.0.0.1:8200
 
@@ -145,12 +144,12 @@ jobs:
           bao secrets enable -path=pki_int  pki || true
           bao write pki_root/root/generate/internal \
             common_name="Test Root CA" ttl=87600h >/dev/null
-          bao write pki_int/intermediate/generate/internal \
+          bao write -format=json pki_int/intermediate/generate/internal \
             common_name="Test Intermediate CA" \
-            | grep -o '"csr": *"[^"]*"' | cut -d'"' -f4 > /tmp/int.csr
-          bao write pki_root/root/sign-intermediate \
+            | jq -r '.data.csr' > /tmp/int.csr
+          bao write -format=json pki_root/root/sign-intermediate \
             csr="$(cat /tmp/int.csr)" \
-            | grep -o '"certificate": *"[^"]*"' | cut -d'"' -f4 > /tmp/int.crt
+            | jq -r '.data.certificate' > /tmp/int.crt
           bao write pki_int/intermediate/set-signed \
             certificate="$(cat /tmp/int.crt)"
           bao auth enable userpass || true

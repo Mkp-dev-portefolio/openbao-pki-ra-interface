@@ -7,7 +7,7 @@ set -e
 # Configuration
 export VAULT_ADDR="${VAULT_ADDR:-http://127.0.0.1:8200}"
 export VAULT_TOKEN="${VAULT_TOKEN:-root}"
-BAO="/opt/homebrew/bin/bao"
+BAO="${BAO_BIN:-$(command -v bao 2>/dev/null || echo /opt/homebrew/bin/bao)}"
 THRESHOLD_DAYS=30  # Alert if cert expires within 30 days
 OUTPUT_DIR="./monitoring_reports"
 
@@ -52,8 +52,13 @@ check_cert_expiration() {
     local issuer=$(openssl x509 -in "$cert_file" -noout -issuer | sed 's/issuer=//')
     local serial=$(openssl x509 -in "$cert_file" -noout -serial | cut -d= -f2)
     
-    # Calculate days until expiration
-    local expiry_epoch=$(date -j -f "%b %d %H:%M:%S %Y %Z" "$not_after" +%s 2>/dev/null || echo "0")
+    # Calculate days until expiration (portable: GNU date on Linux, BSD date on macOS)
+    local expiry_epoch
+    if date -j -f "%b %d %H:%M:%S %Y %Z" "$not_after" +%s >/dev/null 2>&1; then
+        expiry_epoch=$(date -j -f "%b %d %H:%M:%S %Y %Z" "$not_after" +%s)
+    else
+        expiry_epoch=$(date -d "$not_after" +%s 2>/dev/null || echo "0")
+    fi
     local current_epoch=$(date +%s)
     local days_remaining=$(( ($expiry_epoch - $current_epoch) / 86400 ))
     
@@ -185,7 +190,7 @@ echo -e "${BLUE}  4. REVOCATION STATUS (CRL)${NC}" | tee -a "$REPORT_FILE"
 echo -e "${BLUE}═══════════════════════════════════════════════${NC}" | tee -a "$REPORT_FILE"
 
 echo "Fetching CRL from pki_int..." | tee -a "$REPORT_FILE"
-$BAO read -field=crl pki_int/cert/crl > /tmp/crl.pem 2>/dev/null || echo "No CRL available"
+$BAO read -field=certificate pki_int/cert/crl > /tmp/crl.pem 2>/dev/null || echo "No CRL available"
 
 if [ -f "/tmp/crl.pem" ]; then
     CRL_LAST_UPDATE=$(openssl crl -in /tmp/crl.pem -noout -lastupdate | cut -d= -f2)
@@ -220,7 +225,7 @@ echo -e "\n${BLUE}════════════════════�
 echo -e "${BLUE}  6. ACME ACTIVITY${NC}" | tee -a "$REPORT_FILE"
 echo -e "${BLUE}═══════════════════════════════════════════════${NC}" | tee -a "$REPORT_FILE"
 
-ACME_DIR_CHECK=$(curl -s http://127.0.0.1:8200/v1/pki_int/acme/directory >/dev/null 2>&1 && echo "✅ Active" || echo "❌ Inactive")
+ACME_DIR_CHECK=$(curl -s "${VAULT_ADDR}/v1/pki_int/acme/directory" >/dev/null 2>&1 && echo "✅ Active" || echo "❌ Inactive")
 echo -e "ACME Endpoint: $ACME_DIR_CHECK" | tee -a "$REPORT_FILE"
 
 # Final Report Summary

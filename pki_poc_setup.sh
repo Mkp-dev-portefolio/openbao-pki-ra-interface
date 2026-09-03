@@ -1,10 +1,11 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
 # Configuration
 export BAO_ADDR=${BAO_ADDR:-"http://127.0.0.1:8200"}
 export BAO_TOKEN=${BAO_TOKEN:-"root"}
-BINARY="/opt/homebrew/bin/bao"
+BAO_BIN="${BAO_BIN:-$(command -v bao 2>/dev/null || echo /opt/homebrew/bin/bao)}"
+BINARY="$BAO_BIN"
 
 echo "Using OpenBao at $BAO_ADDR with token $BAO_TOKEN"
 
