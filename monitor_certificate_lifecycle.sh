@@ -33,6 +33,11 @@ seconds_to_days() {
     echo $(( $1 / 86400 ))
 }
 
+# Convert an openssl date to epoch seconds with BSD (macOS) or GNU (Linux) date
+to_epoch() {
+    date -j -f "%b %d %H:%M:%S %Y %Z" "$1" +%s 2>/dev/null || date -d "$1" +%s 2>/dev/null || echo 0
+}
+
 # Function to check certificate expiration
 check_cert_expiration() {
     local cert_file=$1
@@ -52,13 +57,8 @@ check_cert_expiration() {
     local issuer=$(openssl x509 -in "$cert_file" -noout -issuer | sed 's/issuer=//')
     local serial=$(openssl x509 -in "$cert_file" -noout -serial | cut -d= -f2)
     
-    # Calculate days until expiration (portable: GNU date on Linux, BSD date on macOS)
     local expiry_epoch
-    if date -j -f "%b %d %H:%M:%S %Y %Z" "$not_after" +%s >/dev/null 2>&1; then
-        expiry_epoch=$(date -j -f "%b %d %H:%M:%S %Y %Z" "$not_after" +%s)
-    else
-        expiry_epoch=$(date -d "$not_after" +%s 2>/dev/null || echo "0")
-    fi
+    expiry_epoch=$(to_epoch "$not_after")
     local current_epoch=$(date +%s)
     local days_remaining=$(( ($expiry_epoch - $current_epoch) / 86400 ))
     
@@ -152,7 +152,7 @@ else
             NOT_AFTER=$(openssl x509 -in /tmp/cert_${SERIAL}.pem -noout -enddate | cut -d= -f2)
             SUBJECT=$(openssl x509 -in /tmp/cert_${SERIAL}.pem -noout -subject | sed 's/subject=//')
             
-            EXPIRY_EPOCH=$(date -j -f "%b %d %H:%M:%S %Y %Z" "$NOT_AFTER" +%s 2>/dev/null || echo "0")
+            EXPIRY_EPOCH=$(to_epoch "$NOT_AFTER")
             CURRENT_EPOCH=$(date +%s)
             DAYS_LEFT=$(( ($EXPIRY_EPOCH - $CURRENT_EPOCH) / 86400 ))
             
@@ -200,7 +200,7 @@ if [ -f "/tmp/crl.pem" ]; then
     echo "CRL Next Update: $CRL_NEXT_UPDATE" | tee -a "$REPORT_FILE"
     
     # Count revoked certificates
-    REVOKED_COUNT=$(openssl crl -in /tmp/crl.pem -text -noout | grep -c "Serial Number:" || echo "0")
+    REVOKED_COUNT=$(openssl crl -in /tmp/crl.pem -text -noout | grep -c "Serial Number:" || true)
     echo -e "${RED}Revoked Certificates: $REVOKED_COUNT${NC}" | tee -a "$REPORT_FILE"
     
     rm /tmp/crl.pem
@@ -225,7 +225,7 @@ echo -e "\n${BLUE}════════════════════�
 echo -e "${BLUE}  6. ACME ACTIVITY${NC}" | tee -a "$REPORT_FILE"
 echo -e "${BLUE}═══════════════════════════════════════════════${NC}" | tee -a "$REPORT_FILE"
 
-ACME_DIR_CHECK=$(curl -s "${VAULT_ADDR}/v1/pki_int/acme/directory" >/dev/null 2>&1 && echo "✅ Active" || echo "❌ Inactive")
+ACME_DIR_CHECK=$(curl -sf "${VAULT_ADDR}/v1/pki_int/acme/directory" >/dev/null 2>&1 && echo "✅ Active" || echo "❌ Inactive")
 echo -e "ACME Endpoint: $ACME_DIR_CHECK" | tee -a "$REPORT_FILE"
 
 # Final Report Summary
@@ -235,7 +235,7 @@ echo -e "${BLUE}═════════════════════�
 
 echo -e "\n✅ Monitoring report generated: $REPORT_FILE" | tee -a "$REPORT_FILE"
 echo -e "📊 Threshold for expiration warning: $THRESHOLD_DAYS days" | tee -a "$REPORT_FILE"
-echo -e "⏰ Next recommended check: $(date -v+1d)" | tee -a "$REPORT_FILE"
+echo -e "⏰ Next recommended check: $(date -v+1d 2>/dev/null || date -d tomorrow)" | tee -a "$REPORT_FILE"
 
 # Export metrics in Prometheus format
 METRICS_FILE="$OUTPUT_DIR/pki_metrics.prom"

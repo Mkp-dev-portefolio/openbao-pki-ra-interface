@@ -49,13 +49,16 @@ curl -s $CRL_URL > revocation.crl
 # Check if serial is present (grep might fail if binary/DER, openssl parse is safer)
 # OpenBao CRL is usually PEM or DER? PEM by default on the endpoint unless ?format=der
 # Default is often DER (binary). Let's start by trying openssl crl -inform DER
-if openssl crl -inform DER -in revocation.crl -text -noout 2>/dev/null | grep -q "$SERIAL"; then
+# openssl prints serials as uppercase hex without colons, unlike OpenBao's serial_number
+CRL_SERIAL=$(openssl x509 -in victim.crt -noout -serial | cut -d= -f2)
+CRL_FAILED=0
+if openssl crl -inform DER -in revocation.crl -text -noout 2>/dev/null | grep -q "$CRL_SERIAL"; then
     echo "   [PASS] Serial found in DER CRL."
-elif openssl crl -inform PEM -in revocation.crl -text -noout 2>/dev/null | grep -q "$SERIAL"; then
+elif openssl crl -inform PEM -in revocation.crl -text -noout 2>/dev/null | grep -q "$CRL_SERIAL"; then
     echo "   [PASS] Serial found in PEM CRL."
 else
     echo "   [FAIL] Serial NOT found in CRL."
-    # We won't exit, we try OCSP.
+    CRL_FAILED=1
 fi
 
 # 5. Verify OCSP
@@ -70,6 +73,11 @@ if echo "$OPENSSL_OCSP_OUT" | grep -q "Cert Status: revoked"; then
 else
     echo "   [FAIL] OCSP did not report revoked."
     echo "$OPENSSL_OCSP_OUT"
+    exit 1
+fi
+
+if [ "$CRL_FAILED" = 1 ]; then
+    echo "--> REVOCATION CHECK FAILED: serial missing from the CRL"
     exit 1
 fi
 
