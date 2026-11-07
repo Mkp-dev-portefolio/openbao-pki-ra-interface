@@ -59,9 +59,10 @@ const Bao = {
   async issueCert(role, payload) {
     return (await Bao.post(`${CONFIG.mount}/issue/${role}`, payload)).data;
   },
-  async revokeCert(serial_number, reason) {
+  async revokeCert(serial_number, reasonCode) {
     const body = { serial_number };
-    if (reason) body.reason = reason;
+    // Servers that predate revocation_reason ignore it with a warning
+    if (reasonCode !== undefined) body.revocation_reason = reasonCode;
     return (await Bao.post(`${CONFIG.mount}/revoke`, body)).data;
   },
   async listRoles() {
@@ -445,6 +446,11 @@ const ROLE_TEMPLATES = {
   'corporate-user': { allowed_domains: '*.corp.energy.internal',  ttl: '24h',   alt_names: '',                       key_usage: 'DigitalSignature' },
 };
 
+const RFC5280_REASON_CODES = {
+  unspecified: 0, keyCompromise: 1, caCompromise: 2, affiliationChanged: 3,
+  superseded: 4, cessationOfOperation: 5, privilegeWithdrawn: 9,
+};
+
 const Lifecycle = {
   async load() {
     const roles = await Bao.listRoles();
@@ -494,7 +500,7 @@ const Lifecycle = {
 
     el('btn-revoke-confirm').disabled = true;
     try {
-      await Bao.revokeCert(serial, reason || undefined);
+      await Bao.revokeCert(serial, RFC5280_REASON_CODES[reason]);
       auditPush('Certificate Revoked', `Serial=${serial} Reason=${reason}`, 'warn');
       hideModal('modal-revoke');
       toast(`Certificate revoked: ${serial}`, 'warn');
