@@ -24,7 +24,7 @@ WORK_DIR=""
 # ─── Helpers ────────────────────────────────────────────────────────────────
 
 # Run the bao CLI and return its output; fail the test on non-zero exit.
-bao() { "$BAO_BIN" "$@"; }
+bao() { command "$BAO_BIN" "$@"; }
 
 # Check that OpenBao is reachable; skip the whole suite if not.
 check_openbao_reachable() {
@@ -160,14 +160,16 @@ teardown() {
   echo "${output}" | grep -qi "not allowed\|does not match\|denied\|error"
 }
 
-@test "issuance fails when requested TTL exceeds role max_ttl" {
+@test "a requested TTL above the role max_ttl is capped to max_ttl with a warning" {
   bao write "${TEST_MOUNT}/roles/${TEST_ROLE_PREFIX}-ttl" \
     allowed_domains="bats.energy.internal" allow_subdomains=true max_ttl="1h"
 
-  run bao write "${TEST_MOUNT}/issue/${TEST_ROLE_PREFIX}-ttl" \
-    common_name="device.bats.energy.internal" ttl="9999h"
+  result=$(bao write -format=json "${TEST_MOUNT}/issue/${TEST_ROLE_PREFIX}-ttl" \
+    common_name="device.bats.energy.internal" ttl="9999h" 2>/dev/null)
 
-  [ "$status" -ne 0 ]
+  echo "${result}" | jq -e '.warnings | any(test("maxTTL"))'
+  expiration=$(echo "${result}" | jq -r '.data.expiration')
+  [ $((expiration - $(date +%s))) -le 3660 ]
 }
 
 @test "issuance fails with empty common_name" {
@@ -212,22 +214,20 @@ teardown() {
   [ "${revocation_time:-0}" -gt 0 ]
 }
 
-@test "revoking an already-revoked certificate returns an error" {
+@test "revoking an already-revoked certificate is idempotent and keeps the first revocation time" {
   bao write "${TEST_MOUNT}/roles/${TEST_ROLE_PREFIX}-basic" \
     allowed_domains="bats.energy.internal" allow_subdomains=true max_ttl="1h"
 
   serial=$(bao write -format=json "${TEST_MOUNT}/issue/${TEST_ROLE_PREFIX}-basic" \
-    common_name="double-revoke.bats.energy.internal" ttl="30m" \
-    | grep -o '"serial_number": *"[^"]*"' | cut -d'"' -f4)
+    common_name="double-revoke.bats.energy.internal" ttl="30m" | jq -r '.data.serial_number')
 
-  bao write "${TEST_MOUNT}/revoke" serial_number="$serial"
+  first=$(bao write -format=json "${TEST_MOUNT}/revoke" serial_number="$serial" 2>/dev/null \
+    | jq -r '.data.revocation_time')
+  second=$(bao write -format=json "${TEST_MOUNT}/revoke" serial_number="$serial" 2>/dev/null \
+    | jq -r '.data.revocation_time')
 
-  # Second revocation attempt must fail or at minimum not panic
-  run bao write "${TEST_MOUNT}/revoke" serial_number="$serial"
-  # OpenBao returns an error or idempotent — either way, the serial is revoked
-  # A non-zero exit indicates an error was returned (expected behaviour)
-  # If the server is idempotent (returns 200), the test still passes
-  [ "$status" -ne 0 ] || echo "${output}" | grep -qi "already revoked\|certificate is\|revocation"
+  [ "${first}" -gt 0 ]
+  [ "${second}" = "${first}" ]
 }
 
 # ════════════════════════════════════════════════════════════════════════════

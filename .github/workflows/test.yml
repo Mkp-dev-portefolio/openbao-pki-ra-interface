@@ -126,9 +126,9 @@ jobs:
           OPENBAO_VERSION: "2.0.0"
         run: |
           curl -fsSL \
-            "https://github.com/openbao/openbao/releases/download/v${OPENBAO_VERSION}/bao_${OPENBAO_VERSION}_linux_amd64" \
-            -o /usr/local/bin/bao
-          chmod +x /usr/local/bin/bao
+            "https://github.com/openbao/openbao/releases/download/v${OPENBAO_VERSION}/bao_${OPENBAO_VERSION}_Linux_x86_64.tar.gz" \
+            -o /tmp/bao.tgz
+          sudo tar -xzf /tmp/bao.tgz -C /usr/local/bin bao
           bao version
 
       - name: Start OpenBao dev server
