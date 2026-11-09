@@ -38,3 +38,6 @@ user_cert.json
 # Other generated output
 monitoring_reports/
 revocation.crl
+
+# Auto-unseal demo state: Raft data, recovery key and root token
+auto_unseal_lab/

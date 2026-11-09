@@ -163,3 +163,12 @@ jobs:
           BAO_ADDR: http://127.0.0.1:8200
           BAO_TOKEN: root
           BAO_BIN: bao
+
+      - name: Run Transit and auto-unseal demos
+        run: |
+          bash transit_demo.sh
+          bash setup_auto_unseal.sh
+          bash setup_auto_unseal.sh stop
+        env:
+          BAO_ADDR: http://127.0.0.1:8200
+          BAO_TOKEN: root
